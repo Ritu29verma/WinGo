@@ -1,0 +1,40 @@
+/* Register.css */
+
+.intl-tel-input {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #1f2937; /* Dark background */
+  border-radius: 4px;
+  padding: 8px;
+  color: #e5e7eb;
+}
+
+.intl-tel-input .selected-flag {
+  display: flex;
+  align-items: center;
+  padding-right: 10px; 
+}
+
+.phone-input {
+  background: transparent;
+  color: #e5e7eb;
+  border: none;
+  outline: none;
+  padding-right: 10px ; /* Space between code and phone number */
+  width: 100%;
+}
+
+.intl-tel-input .country-list {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  border-radius: 4px;
+}
+
+.intl-tel-input .country-list .country {
+  padding: 10px;
+}
+
+.intl-tel-input .country-list .country:hover {
+  background-color: #374151;
+}
