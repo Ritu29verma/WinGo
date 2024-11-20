@@ -23,10 +23,10 @@ const GameSection = () => {
             key={color}
             className={`py-2 lg:py-4 px-4 text-center font-bold text-white ${
               color === "green"
-                ? "bg-green rounded-tr-lg rounded-bl-lg"
+                ? "bg-green transform transition-transform hover:scale-95 rounded-tr-lg rounded-bl-lg"
                 : color === "violet"
-                ? "bg-violet rounded-lg"
-                : "bg-red rounded-tr-lg rounded-bl-lg"
+                ? "bg-violet transform transition-transform hover:scale-95 rounded-lg"
+                : "bg-red transform transition-transform hover:scale-95 rounded-tr-lg rounded-bl-lg"
             }`}
           >
             {color.toUpperCase()}
@@ -41,7 +41,7 @@ const GameSection = () => {
             key={index}
             src={image}
             alt={`Number ${index}`}
-            className="w-12 h-12 sm:w-16 sm:h-16  md:w-24 md:h-24  object-contain"
+            className="w-12 h-12 sm:w-16 sm:h-16 transform transition-transform hover:scale-95 md:w-24 md:h-24  object-contain"
           />
         ))}
       </div>
@@ -60,6 +60,17 @@ const GameSection = () => {
           </button>
         ))}
       </div>
+
+      <div className="flex justify-center p-5 md:pt-8 items-center">
+            <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-12 py-3 w-1/3 md:w-1/4 md:py-4 rounded-l-full">
+              Small
+            </button>
+            <button className="bg-blue-500 hover:bg-blue-600 text-white px-12 py-3 w-1/3 md:w-1/4 md:py-4 rounded-r-full">
+              Big
+            </button>
+          </div>
+
+
     </div>
   );
 };

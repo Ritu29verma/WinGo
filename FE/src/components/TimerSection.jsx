@@ -22,7 +22,7 @@ const TimerSection = () => {
   return (
     <div className="bg-customBlue w-full max-w-7xl rounded-lg p-4 mb-4 shadow-lg">
       {/* Timer Selection Buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-white">
+      <div className="grid grid-cols-4 md:grid-cols-4 gap-4 mb-6 text-white">
         {[30, 60, 180, 300].map((time) => (
           <button
             key={time}
@@ -70,8 +70,9 @@ const TimerSection = () => {
             {String(timeRemaining % 60).padStart(2, "0").charAt(1)}
           </div>
         </div>
+        <div className="text-white p-2">3436sgsng565ncv</div>
       </div>
-
+        
       {/* Countdown Alert for Last Few Seconds */}
       {timeRemaining <= 5 && timeRemaining > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center text-white text-3xl sm:text-5xl font-bold z-50">

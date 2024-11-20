@@ -6,7 +6,7 @@ const GameHistory = () => {
   const tabs = ["Game History", "Chart", "My History"];
 
   return (
-    <div className="bg-blue-800 w-full max-w-7xl rounded-lg p-4 shadow-lg mt-4">
+    <div className="bg-black  text-white w-full max-w-7xl rounded-lg p-4 mt-4">
       <div className="flex justify-around mb-4">
         {tabs.map((tab) => (
           <button
@@ -15,7 +15,7 @@ const GameHistory = () => {
             className={`px-4 py-2 rounded-lg font-bold ${
               activeTab === tab.toLowerCase().replace(" ", "")
                 ? "bg-green-500"
-                : "bg-gray-700 hover:bg-gray-600"
+                : "bg-customBlue hover:bg-gradient-to-l from-blue-900 to-blue-500"
             }`}
           >
             {tab}
