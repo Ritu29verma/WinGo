@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import AdminSignup from './pages/AdminSignup';
+import AdminLogin from './pages/AdminLogin';
 import Home from './pages/Home';
 import WinGo from "./pages/WinGo";
 import { ToastContainer } from 'react-toastify';
@@ -22,6 +24,8 @@ function App() {
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin/register" element={<AdminSignup />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/" element={<Home />} />
           {/* Protected Route */}
           <Route path="/wingo" element={isAuthenticated ? <WinGo /> : <Navigate to="/login" />} />

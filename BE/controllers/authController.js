@@ -47,14 +47,11 @@ export const loginUser = async (req, res) => {
     if (!validation.success) {
       return res.status(400).json({ error: validation.error.errors });
     }
-
     const { phoneNo, password } = req.body;
-
     const user = await User.findOne({ phoneNo });
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid credentials" });
