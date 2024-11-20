@@ -1,37 +1,25 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const passport = require('passport');
-const User = require('./models/User');
-const authRoutes = require("./routes/auth");
-require("dotenv").config();
-const cors = require("cors");
-const app = express();
-const bodyParser = require('body-parser');
-const port = 3000;
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import gameRoutes from "./routes/gameRoutes.js";
 
-app.use(express.json());   
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+connectDB();
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(passport.initialize());
 
-mongoose.connect(
-    `mongodb://localhost:27017/`
-)
-.then((x) =>{
-    console.log("Connected to Mongo!");
-})
-.catch((err) =>{
-    console.log(err);
-});
-
-app.get("/", (req, res) => {
-    res.send( "Hello World!" );
-    });
-    
-    app.use("/auth", authRoutes);
-
+app.use("/auth", authRoutes);
+app.use("/game", gameRoutes);
 
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });

@@ -1,21 +1,24 @@
 import { useState } from 'react';
 import { FaPhoneAlt, FaLock,FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'; // Importing toast for notifications
+import { ToastContainer,toast } from 'react-toastify'; // Importing toast for notifications
 import axios from 'axios';
-
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 function LoginPage() {
   const [phoneNo, setPhoneNo] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [countryCode, setCountryCode] = useState("");
   const navigate = useNavigate();
 
   // Handle phone number change
-  const handlePhoneNumberChange = (value) => {
-    setPhoneNo(value);
-    setError(''); 
+  const handlePhoneNumberChange = (value, countryData) => {
+    setPhoneNo(value); // Set phone number
+    setCountryCode(countryData.dialCode); 
+    setError('')
   };
 
   const handlePasswordChange = (value) => {
@@ -29,9 +32,18 @@ function LoginPage() {
       toast.error("Both fields are required");
       return;
     }
+    const phoneNumber = phoneNo.slice(countryCode.length);
+  
+    // Ensure phone number is valid (e.g., has at least 10 digits after removing the country code)
+    if (phoneNumber.length < 10) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
 
     try {
-      const response = await axios.post('http://localhost:3000/auth/login', { phoneNo, password }, {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/auth/login`, 
+        { phoneNo:phoneNumber, 
+          password }, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -39,11 +51,28 @@ function LoginPage() {
         toast.success("Login successful");
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/"); // Navigate to the dashboard after successful login
+        setTimeout(() => {
+          navigate("/");
+        }, 1500); 
       }
     } catch (error) {
-      setError(error.response?.data?.message || error.message);
-      toast.error("Login failed. Please check your credentials.");
+      // Log the full error object for debugging
+      console.error("Error during login:", error);
+  
+      if (error.code === 'ERR_NETWORK') {
+        // Handle network error explicitly
+        toast.error("Network error. Please check your connection and try again.");
+      } else if (error.response?.data?.error) {
+        // Handle specific backend error messages
+        if (Array.isArray(error.response.data.error)) {
+          error.response.data.error.forEach((err) => toast.error(err.message));
+        } else {
+          toast.error(error.response.data.error);
+        }
+      } else {
+        // Fallback error message if no specific error is provided
+        toast.error("Login failed. Please try again.");
+      }
     }
   };
 
@@ -64,14 +93,25 @@ function LoginPage() {
         <label className="block text-gray-400 text-sm font-semibold mb-2">
           <FaPhoneAlt className="inline-block mr-2" /> Phone number
         </label>
-        <div className="flex items-center bg-gray-800 rounded-md p-2 mb-4">
-          <input
-            type="text"
-            placeholder="Please enter your phone number"
-            className="bg-transparent p-2 flex-grow outline-none text-gray-200"
-            value={phoneNo}
-            onChange={(e) => handlePhoneNumberChange(e.target.value)}
-          />
+        <div className="">
+      <PhoneInput
+          country={"in"}
+          value={phoneNo}
+          onChange={(value, countryData) => handlePhoneNumberChange(value, countryData)}
+          specialLabel="Phone Number"
+          placeholder="XXXXXXXXXX"
+          inputClass=""
+    
+          containerStyle={{
+            backgroundColor: "#1f2937", // Matches bg-gray-800
+            borderRadius: "8px", // Matches rounded-md
+            padding: "8px", // Matches p-2
+            marginBottom: "16px", // Matches mb-4
+          }}
+          
+          disableDropdown={false}
+        />
+
         </div>
 
         {/* Password Input */}
@@ -113,6 +153,7 @@ function LoginPage() {
           </span>
         </p>
       </div>
+      <ToastContainer />
     </div>
   );
 }

@@ -1,32 +1,33 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
   phoneNo: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
+  },
+  countryCode: {
+    type: String,
+    required: true,
   },
   password: {
     type: String,
     required: true,
     minlength: 6,
   },
-  inviteCode:{
-    type:String,
+  inviteCode: {
+    type: String,
   },
-  agree:{
-    type:Boolean,
-    default:false,
-    required: true,
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  createdAt:{
-    type:Date,
-    default:Date.now  
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
-  updatedAt:{
-    type:Date,
-    default:Date.now
-    }
 });
-const UserModel = mongoose.model('User', UserSchema);
-module.exports = UserModel;
+
+
+const User = mongoose.model("User", UserSchema);
+export default User;
