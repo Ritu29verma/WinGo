@@ -10,7 +10,9 @@ function Header() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("isAdmin");
     setIsAuthenticated(false); // Update the state after logout
   };
 

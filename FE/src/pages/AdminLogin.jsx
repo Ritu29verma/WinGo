@@ -50,10 +50,11 @@ const AdminLogin = () => {
       if (response.status === 200) {
         toast.success("Login successful");
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("admin_id", JSON.stringify(response.data.admin.id));
+        localStorage.setItem("isAdmin", true);
         setTimeout(() => {
-          navigate("/");
-        }, 1500); 
+          navigate("/admin/dashboard");
+        }, 1500);
       }
     } catch (error) {
       // Log the full error object for debugging

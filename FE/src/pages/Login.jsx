@@ -50,7 +50,8 @@ function LoginPage() {
       if (response.status === 200) {
         toast.success("Login successful");
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("user_id", JSON.stringify(response.data.user.id));
+        localStorage.setItem("isAdmin",false)
         setTimeout(() => {
           navigate("/");
         }, 1500); 

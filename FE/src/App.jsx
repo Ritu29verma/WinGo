@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import AdminSignup from './pages/AdminSignup';
 import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 import Home from './pages/Home';
 import WinGo from "./pages/WinGo";
 import { ToastContainer } from 'react-toastify';
@@ -23,6 +24,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/register" element={<AdminSignup />} />
           <Route path="/admin/login" element={<AdminLogin />} />
