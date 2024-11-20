@@ -1,22 +1,32 @@
 import React from "react";
-import CountButton from "./CountButton";
-import ColorButtons from "./ColorButtons";
+import zero from "../assets/0.png";
+import one from "../assets/1.png";
+import two from "../assets/2.png";
+import three from "../assets/3.png";
+import four from "../assets/4.png";
+import five from "../assets/5.png";
+import six from "../assets/6.png";
+import seven from "../assets/7.png";
+import eight from "../assets/8.png";
+import nine from "../assets/9.png";
+
 const GameSection = () => {
   const colors = ["green", "violet", "red"];
-  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const numbers = [zero, one, two, three, four, five, six, seven, eight, nine];
+
   return (
-    <div className="bg-blue-800 w-full max-w-7xl rounded-lg p-4 shadow-lg">
+    <div className="bg-black w-full max-w-7xl rounded-lg p-4 shadow-lg">
       {/* Color Buttons */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-4">
         {colors.map((color) => (
           <button
             key={color}
-            className={`py-2 px-4 rounded-lg text-center font-bold text-white ${
+            className={`py-2 lg:py-4 px-4 text-center font-bold text-white ${
               color === "green"
-                ? "bg-green"
+                ? "bg-green rounded-tr-lg rounded-bl-lg"
                 : color === "violet"
-                ? "bg-violet"
-                : "bg-red"
+                ? "bg-violet rounded-lg"
+                : "bg-red rounded-tr-lg rounded-bl-lg"
             }`}
           >
             {color.toUpperCase()}
@@ -25,99 +35,31 @@ const GameSection = () => {
       </div>
 
       {/* Number Buttons */}
-      <div className="p-10  flex space-x-4">
-      {/* Usage of ColorButtons with different colors */}
-      <ColorButtons
-        number={1} 
-        color1="bg-red" 
-        color2="bg-yellow-500"
-        digitColor1="text-red"
-        digitColor2="text-yellow-500"
-      />
-      
-      <ColorButtons
-        number={2} 
-        color1="bg-pink-500" 
-        color2="bg-yellow-500"
-        digitColor1="text-pink-500"
-        digitColor2="text-yellow-500"
-      />
-      
-      <ColorButtons
-        number={3} 
-        color1="bg-blue-500" 
-        color2="bg-green"
-        digitColor1="text-blue-500"
-        digitColor2="text-green-500"
-      />
-      <ColorButtons
-        number={4} 
-        color1="bg-blue-500" 
-        color2="bg-green-500"
-        digitColor1="text-blue-500"
-        digitColor2="text-green-500"
-      />
-      <ColorButtons
-        number={5} 
-        color1="bg-blue-500" 
-        color2="bg-green"
-        digitColor1="text-blue-500"
-        digitColor2="text-green"
-      />
-      <ColorButtons
-        number={6} 
-        color1="bg-blue-500" 
-        color2="bg-green-500"
-        digitColor1="text-blue-500"
-        digitColor2="text-green-500"
-      />
-      <ColorButtons
-        number={7} 
-        color1="bg-pink-500" 
-        color2="bg-green-500"
-        digitColor1="text-pink-500"
-        digitColor2="text-green-500"
-      />
-      <ColorButtons
-        number={8} 
-        color1="bg-yellow-500" 
-        color2="bg-green-500"
-        digitColor1="text-yellow-500"
-        digitColor2="text-green-500"
-      />
-        <ColorButtons
-        number={9} 
-        color1="bg-red" 
-        color2="bg-yellow-500"
-        digitColor1="text-red"
-        digitColor2="text-yellow-500"
-      />
-
-    </div>
+      <div className="grid sm:grid-cols-5 md:grid-cols-10 grid-cols-5 gap-2 p-4">
+        {numbers.map((image, index) => (
+          <img
+            key={index}
+            src={image}
+            alt={`Number ${index}`}
+            className="w-12 h-12 sm:w-16 sm:h-16  md:w-24 md:h-24  object-contain"
+          />
+        ))}
+      </div>
 
       {/* Random and Multipliers */}
-      <div className="flex justify-around mb-4">
-        <button className="bg-gray-700 px-4 py-2 rounded-lg text-white">Random</button>
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
+        <button className="bg-black px-8 py-2 rounded-lg text-red border">
+          Random
+        </button>
         {["X1", "X5", "X10", "X20", "X50", "X100"].map((multiplier) => (
           <button
             key={multiplier}
-            className="bg-gray-700 px-4 py-2 rounded-lg text-white"
+            className="bg-customBlue hover:bg-green px-6 py-2 rounded-lg text-white"
           >
-           
             {multiplier}
           </button>
         ))}
       </div>
-
-      {/* Big/Small Buttons */}
-      {/* <div className="flex justify-between">
-        <button className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold">
-          Big
-        </button>
-        <button className="bg-blue-500 px-4 py-2 rounded-lg text-white font-bold">
-          Small
-        </button>
-      </div> */}
     </div>
   );
 };
