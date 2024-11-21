@@ -54,3 +54,21 @@ export const loginAdmin = async (req, res) => {
     }
   };
   
+  export const checkAdmin = async (req, res) => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(401).json({ isAdmin: false, message: "No token provided" });
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      const admin = await Admin.findById(decoded.adminId);
+      if (!admin) {
+        return res.status(403).json({ isAdmin: false, message: "Not authorized" });
+      }
+      res.status(200).json({ isAdmin: true, message: "User is an admin" });
+    } catch (error) {
+      console.error("Error during admin check:", error);
+      res.status(403).json({ isAdmin: false, message: "Invalid or expired token" });
+    }
+  };

@@ -1,23 +1,40 @@
-// components/AdminNavbar.js
-import React, { useState } from 'react';
-import { FaBars } from 'react-icons/fa'; // Icon for the menu
-import Sidebar from './AdminSidebar';
+import React, { useState } from "react";
+import { FaBars } from "react-icons/fa"; // Menu icon
+import AdminSidebar from "./AdminSidebar";
 
-const AdminNavbar = () => {
+const AdminNavbar = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  return (
-    <div className="relative flex bg-gray-900 text-white">
-      {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} />
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
 
-      {/* Top Bar */}
-      <div className="flex-1 flex flex-col">
-        <div className="bg-gray-800 flex items-center justify-between p-4">
+  return (
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <div
+        className={`bg-gray-800 text-white fixed h-full z-50 transition-all duration-300 ease-in-out 
+          ${
+          isSidebarOpen ? "md:w-48" : "md:w-0"
+        }
+        `}
+      >
+        <AdminSidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+      </div>
+
+      {/* Main Content */}
+      <div
+        className={`flex-1 ml-0 transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? "md:ml-48" : "md:ml-0"
+        }`}
+      >
+        {/* Top Bar */}
+        <div className="bg-gray-800 flex items-center justify-between p-4 text-white">
+          {/* Menu Button */}
           <button
             onClick={toggleSidebar}
             className="text-white text-2xl focus:outline-none"
@@ -35,10 +52,8 @@ const AdminNavbar = () => {
           </div>
         </div>
 
-        {/* Content (will be replaced by routes) */}
-        <div className="p-6 flex-grow bg-gray-700">
-          {/* Add children or routes here */}
-        </div>
+        {/* Dashboard Content */}
+        {React.cloneElement(children, { isSidebarOpen })}
       </div>
     </div>
   );
