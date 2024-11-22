@@ -15,8 +15,21 @@ const AdminDashboard = ({ isSidebarOpen }) => {
 
   
   useEffect(() => {
+
+    const fetchGameLogs = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`); // Replace with your backend URL
+        const data = await response.json();
+        setGameData(data); // Set the fetched game data
+      } catch (error) {
+        console.error("Failed to fetch game logs:", error);
+      }
+    };
+  
+    fetchGameLogs(); // Fetch logs on component load
+  
     socket.on("gameData", (data) => {
-      setGameData((prev) => [...prev, data]);
+      setGameData((prev) => [data, ...prev]); // Add new game data to the top
     });
 
     socket.on("timerUpdate", ({ minutes, seconds, isTimerActive }) => {
@@ -27,7 +40,12 @@ const AdminDashboard = ({ isSidebarOpen }) => {
 
     socket.on("gameId", ({ gameId }) => {
       setCurrentGameId(gameId);
+      localStorage.setItem("nextGameId", gameId); // Save to localStorage
     });
+  
+    // Restore the nextGameId on component load
+    const storedGameId = localStorage.getItem("nextGameId");
+    if (storedGameId) setCurrentGameId(storedGameId);
 
     return () => {
       socket.off("gameData");
@@ -176,17 +194,17 @@ const AdminDashboard = ({ isSidebarOpen }) => {
                 </tr>
               </thead>
               <tbody>
-                {gameData.map((data, index) => (
-                  <tr key={index} className="bg-gray-900">
-                    <td className="px-4 py-2">{data.gameId}</td>
-                    <td className="px-4 py-2">{data.number}</td>
-                    <td className="px-4 py-2">
-                      {Array.isArray(data.color) ? data.color.join(", ") : data.color}
-                    </td>
-                    <td className="px-4 py-2">{data.bigOrSmall}</td>
-                  </tr>
-                ))}
-              </tbody>
+              {gameData.map((game, index) => (
+                <tr key={index} className="bg-gray-700 text-gray-200">
+                  <td className="px-4 py-2">{game.gameId}</td>
+                  <td className="px-4 py-2">{game.number}</td>
+                  <td className="px-4 py-2">{game.color.join(", ")}</td>
+                  <td className="px-4 py-2">{game.bigOrSmall}</td>
+                  {/* <td className="px-4 py-2">{game.duration}</td>
+                  <td className="px-4 py-2">{new Date(game.timestamp).toLocaleString()}</td> */}
+                </tr>
+              ))}
+            </tbody>
             </table>
           </div>
         </div>

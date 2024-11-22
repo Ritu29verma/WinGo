@@ -39,7 +39,12 @@ const TimerSection = () => {
     // Listen for gameId event
     socket.on("gameId", ({ gameId }) => {
       setCurrentGameId(gameId);
+      localStorage.setItem("nextGameId", gameId); // Save to localStorage
     });
+  
+    // Restore the nextGameId on component load
+    const storedGameId = localStorage.getItem("nextGameId");
+    if (storedGameId) setCurrentGameId(storedGameId);
   
     return () => {
       socket.off("timerUpdate");

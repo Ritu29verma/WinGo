@@ -19,7 +19,7 @@ const AdminNavbar = ({ children }) => {
       <div
         className={`bg-gray-800 text-white fixed h-full z-50 transition-all duration-300 ease-in-out 
           ${
-          isSidebarOpen ? "md:w-48" : "md:w-0"
+          isSidebarOpen ? "md:w-52" : "md:w-0"
         }
         `}
       >
@@ -29,7 +29,7 @@ const AdminNavbar = ({ children }) => {
       {/* Main Content */}
       <div
         className={`flex-1 ml-0 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? "md:ml-48" : "md:ml-0"
+          isSidebarOpen ? "md:ml-52" : "md:ml-0"
         }`}
       >
         {/* Top Bar */}

@@ -7,7 +7,9 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 // import gameRoutes from "./routes/gameRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import initializeSocket from "./socket.js"; 
+import {initializeSocket} from "./socket.js"; 
+import gameRoutes from "./routes/gameRoutes.js"
+
 
 
 dotenv.config();
@@ -25,6 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", authRoutes);
 // app.use("/api/game", gameRoutes);
 app.use("/admin", adminRoutes);
+app.use("/game", gameRoutes);
 
 
 
