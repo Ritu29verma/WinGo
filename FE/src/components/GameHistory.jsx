@@ -44,7 +44,7 @@ const GameHistory = () => {
             className={`px-4 py-2 rounded-lg font-bold ${
               activeTab === tab.toLowerCase().replace(" ", "")
                 ? "bg-green-500"
-                : "bg-customBlue hover:bg-gradient-to-l from-blue-900 to-blue-500"
+                : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
             }`}
           >
             {tab}

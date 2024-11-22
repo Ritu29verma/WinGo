@@ -7,6 +7,8 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Home from './pages/Home';
 import WinGo from "./pages/WinGo";
+import DepositPage from './pages/DepositPage';
+import Withdraw from './pages/Withdraw';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -39,6 +41,8 @@ function App() {
           <Route path="/" element={<Home />} />
           {/* Protected Route */}
           <Route path="/wingo" element={isAuthenticated ? <WinGo /> : <Navigate to="/login" />} />
+          <Route path="/wingo/deposit" element={isAuthenticated ? <DepositPage /> : <Navigate to="/login" />} />
+          <Route path="/wingo/withdraw" element={isAuthenticated ? <Withdraw /> : <Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
     </>
