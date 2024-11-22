@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import logo from "../assets/image2.png";
-
+import socket from "../socket";
 const TimerSection = () => {
   const [selectedTime, setSelectedTime] = useState(30); // Default timer 30s
   const [timeRemaining, setTimeRemaining] = useState(selectedTime);
+  const [timerStatus, setTimerStatus] = useState(false);
+    const [currentGameId, setCurrentGameId] = useState(null);
+    const [timerDigits, setTimerDigits] = useState([0, 0, 0, 0]);
 
   useEffect(() => {
     if (timeRemaining > 0) {
@@ -18,6 +21,32 @@ const TimerSection = () => {
   useEffect(() => {
     setTimeRemaining(selectedTime); // Reset countdown when timer changes
   }, [selectedTime]);
+
+  useEffect(() => {
+    // Listen for timer updates
+    socket.on("timerUpdate", ({ minutes, seconds, isTimerActive }) => {
+      const minuteString = String(minutes).padStart(2, "0");
+      const secondString = String(seconds).padStart(2, "0");
+  
+      setTimerDigits([
+        ...minuteString.split("").map(Number),
+        ...secondString.split("").map(Number),
+      ]);
+  
+      setTimerStatus(isTimerActive);
+    });
+  
+    // Listen for gameId event
+    socket.on("gameId", ({ gameId }) => {
+      setCurrentGameId(gameId);
+    });
+  
+    return () => {
+      socket.off("timerUpdate");
+      socket.off("gameId");
+    };
+  }, []);
+  
 
   return (
     <div className="bg-customBlue w-full max-w-7xl rounded-lg p-4 mb-4 shadow-lg">
@@ -54,31 +83,31 @@ const TimerSection = () => {
         <div className="flex space-x-2 items-center">
           {/* Minutes Tens */}
           <div className="bg-white text-blue-900 font-bold text-lg sm:text-xl md:text-2xl w-10 h-10 sm:w-12 sm:h-12 flex justify-center items-center rounded-md shadow-md">
-            {String(Math.floor(timeRemaining / 60)).padStart(2, "0").charAt(0)}
+            {timerDigits[0]}
           </div>
           {/* Minutes Units */}
           <div className="bg-white text-blue-900 font-bold text-lg sm:text-xl md:text-2xl w-10 h-10 sm:w-12 sm:h-12 flex justify-center items-center rounded-md shadow-md">
-            {String(Math.floor(timeRemaining / 60)).padStart(2, "0").charAt(1)}
+          {timerDigits[1]}
           </div>
           <span className="text-white text-lg sm:text-xl font-bold">:</span>
           {/* Seconds Tens */}
           <div className="bg-white text-blue-900 font-bold text-lg sm:text-xl md:text-2xl w-10 h-10 sm:w-12 sm:h-12 flex justify-center items-center rounded-md shadow-md">
-            {String(timeRemaining % 60).padStart(2, "0").charAt(0)}
+          {timerDigits[2]}
           </div>
           {/* Seconds Units */}
           <div className="bg-white text-blue-900 font-bold text-lg sm:text-xl md:text-2xl w-10 h-10 sm:w-12 sm:h-12 flex justify-center items-center rounded-md shadow-md">
-            {String(timeRemaining % 60).padStart(2, "0").charAt(1)}
+          {timerDigits[3]}
           </div>
         </div>
-        <div className="text-white p-2">3436sgsng565ncv</div>
+        <div className="text-white p-2"> {currentGameId}</div>
       </div>
         
       {/* Countdown Alert for Last Few Seconds */}
-      {timeRemaining <= 5 && timeRemaining > 0 && (
+      {/* {timeRemaining <= 5 && timeRemaining > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center text-white text-3xl sm:text-5xl font-bold z-50">
-          {timeRemaining}
+          {      }
         </div>
-      )}
+      )} abhi prop likhna h */}
     </div>
   );
 };
