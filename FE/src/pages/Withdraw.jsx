@@ -1,11 +1,104 @@
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
 import { FaCreditCard, FaBitcoin, FaPlus, FaHeadset } from "react-icons/fa";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Withdraw = () => {
   const [activeTab, setActiveTab] = useState("Bank Card");
+  const [walletDetails, setWalletDetails] = useState({ walletNo: "", totalAmount: 0 });
+  const [formData, setFormData] = useState({
+    type: "Bank Card",
+    accountNo: "",
+    cardHolderName: "",
+    bankName: "",
+    ifscCode: "",
+    amount: "",
+  });
+
+  useEffect(() => {
+    const fetchWalletDetails = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/auth/wallet-details`,
+          { headers: { Authorization: `${token}` } }
+        );
+        setWalletDetails(response.data);
+      } catch (err) {
+        console.error("Error fetching wallet details:", err);
+      }
+    };
+
+    fetchWalletDetails();
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setFormData({ ...formData, type: tab });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleWithdraw = async () => {
+    
+    try {
+      // Ensure the form data is complete
+      if (
+        activeTab === "Bank Card" &&
+        (!formData.accountNo ||
+          !formData.cardHolderName ||
+          !formData.bankName ||
+          !formData.ifscCode ||
+          !formData.amount)
+      ) {
+        toast.error("Please fill in all the required fields for bank withdrawal.");
+        return;
+      }
+
+      if (activeTab === "USTD" && !formData.amount) {
+        toast.error("Please enter the amount for USTD withdrawal.");
+        return;
+      }
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/auth/withdraw`,
+        {
+          type: formData.type,
+          accountNo: formData.accountNo,
+          cardHolderName: formData.cardHolderName,
+          bankName: formData.bankName,
+          ifscCode: formData.ifscCode,
+          amount: formData.amount,
+          walletNo: walletDetails.walletNo
+        },
+        {
+          headers: { Authorization: `${token}` },
+        }
+      );
+      
+
+      if (response.status === 201) {
+        toast.success("Withdrawal request submitted successfully.");
+        // Optionally, reset the form or navigate to another page
+        setFormData({
+          type: activeTab,
+          accountNo: "",
+          cardHolderName: "",
+          bankName: "",
+          ifscCode: "",
+          amount: "",
+        });
+      } else {
+        toast.error("Failed to submit withdrawal request. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting withdrawal request:", error);
+      toast.error("An error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -22,8 +115,8 @@ const Withdraw = () => {
           <h2 className="text-lg font-bold">Available Balance</h2>
           <button className="text-sm">⟳</button>
         </div>
-        <p className="text-4xl font-bold my-4">₹1644.32</p>
-        <p className="text-right text-gray-200">**** ****</p>
+        <p className="text-4xl font-bold my-4">₹{walletDetails.totalAmount.toFixed(2)}</p>
+        <p className="text-right text-gray-200">{walletDetails.walletNo}</p>
       </div>
 
     <div className="bg-black text-white w-full max-w-5xl rounded-lg p-4 mt-4" >
@@ -42,15 +135,15 @@ const Withdraw = () => {
             Bank Card
           </button>
           <button
-            onClick={() => handleTabChange("USDT")}
+            onClick={() => handleTabChange("USTD")}
             className={`flex flex-col items-center justify-center p-4 rounded-lg text-center font-bold ${
-              activeTab === "USDT"
+              activeTab === "USTD"
                 ? "bg-green-500"
                 : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
             }`}
           >
             <FaBitcoin size={24} />
-            USDT
+            USTD
           </button>
         </div>
       </div>
@@ -66,8 +159,11 @@ const Withdraw = () => {
   <div className="flex items-center justify-between">
   <label className="text-white text-xl w-1/3">Account Number:</label>
     <input
+      name="accountNo"
       type="number"
       placeholder="Enter Account Number"
+      value={formData.accountNo}
+      onChange={handleInputChange}
       className=" text-white w-2/3 bg-gray-600 rounded-md p-3 text-xl focus:outline-none"
     />
   </div>
@@ -76,8 +172,11 @@ const Withdraw = () => {
   <div className="flex items-center justify-between ">
     <label className="text-white text-xl w-1/3">Cardholder Name:</label>
     <input
+      name="cardHolderName"
       type="text"
       placeholder="Enter Cardholder Name"
+      value={formData.cardHolderName}
+      onChange={handleInputChange}
       className=" text-white bg-gray-600 rounded-md p-3  text-xl w-2/3 focus:outline-none"
     />
   </div>
@@ -86,8 +185,11 @@ const Withdraw = () => {
   <div className="flex items-center justify-between">
     <label className="text-white text-xl w-1/3">Bank Name:</label>
     <input
+      name="bankName"
       type="text"
       placeholder="Enter Bank Name"
+      value={formData.bankName}
+      onChange={handleInputChange}
       className=" text-white bg-gray-600 rounded-md p-3  text-xl w-2/3 focus:outline-none"
     />
   </div>
@@ -96,8 +198,11 @@ const Withdraw = () => {
   <div className="flex items-center justify-between ">
     <label className="text-white  text-xl w-1/3">IFSC Code:</label>
     <input
+      name="ifscCode"
       type="text"
       placeholder="Enter IFSC Code"
+      value={formData.ifscCode}
+      onChange={handleInputChange}
       className=" text-white bg-gray-600 rounded-md p-3  text-xl w-2/3 focus:outline-none"
     />
   </div>
@@ -111,14 +216,17 @@ const Withdraw = () => {
 
         {/* Withdrawal Form */}
         <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow w-full max-w-2xl">
-          <h2 className="text-lg font-bold mb-4">Select amount of USDT</h2>
+          <h2 className="text-lg font-bold mb-4">Select amount of USTD</h2>
           {/* Input Section */}
           <div className="space-y-4">
             <div className="flex items-center bg-gray-700 rounded-md p-3">
               <span className="text-xl font-bold mr-2">₹</span>
               <input
+              name="amount"
                 type="number"
                 placeholder="0"
+                value={formData.amount}
+                onChange={handleInputChange}
                 className="bg-transparent text-white text-xl w-full focus:outline-none"
               />
             </div>
@@ -131,7 +239,9 @@ const Withdraw = () => {
            </div>
 
                {/* Withdraw Button */}
-               <button className="bg-gradient-to-r from-blue-500 to-blue-700 text-white w-full py-3 rounded-lg mt-6 font-bold hover:opacity-90">
+               <button
+                onClick={handleWithdraw}
+                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white w-full py-3 rounded-lg mt-6 font-bold hover:opacity-90">
              Withdraw
            </button>
 
@@ -166,7 +276,7 @@ const Withdraw = () => {
       </div>
       )}
 
-      {activeTab === "USDT" && (
+      {activeTab === "USTD" && (
        
          <div className="bg-gray-900 min-h-screen w-full max-w-5xl flex flex-col items-center px-4 py-6 text-white">
          
@@ -175,13 +285,13 @@ const Withdraw = () => {
          <div className="bg-gray-800 mt-6 p-4 rounded-lg shadow w-full max-w-2xl flex items-center justify-between">
            <div className="flex items-center">
              <FaHeadset className="text-yellow-500 text-3xl mr-4" />
-             <p>Contact customer service Add USDT address</p>
+             <p>Contact customer service Add USTD address</p>
            </div>
          </div>
 
          {/* Withdrawal Form */}
          <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow w-full max-w-2xl">
-           <h2 className="text-lg font-bold mb-4">Select amount of USDT</h2>
+           <h2 className="text-lg font-bold mb-4">Select amount of USTD</h2>
            {/* Input Section */}
            <div className="space-y-4">
              <div className="flex items-center bg-gray-700 rounded-md p-3">

@@ -8,8 +8,7 @@ const withdrawSchema = new mongoose.Schema(
       required: true,
     },
     walletNo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Wallet", 
+      type: String, 
       required: true,
     },
     accountNo: {
@@ -18,7 +17,7 @@ const withdrawSchema = new mongoose.Schema(
         return this.type === "Bank Card"; // Account No is required only for type "Bank"
       },
     },
-    bankNumber: {
+    bankName: {
       type: String,
       required: function () {
         return this.type === "Bank Card"; // Bank Number is required only for type "Bank"

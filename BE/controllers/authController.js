@@ -5,7 +5,7 @@ import { signupValidator,loginValidator } from "../validators/authValidators.js"
 import Wallet from "../models/Wallet.js";
 import MinAmount from "../models/MinAmount.js";
 import RechargeTransaction from "../models/RechargeTransaction.js";
-
+import Withdraw from "../models/Withdraw.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -157,3 +157,79 @@ export const createRechargeTransaction = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+export const handleWithdraw = async (req, res) => {
+  try {
+    const {
+      type,
+      walletNo,
+      accountNo,
+      bankName,
+      ifscCode,
+      cardHolderName,
+      amount,
+    } = req.body;
+
+    // Validate required fields
+    if (!type || !walletNo || !amount) {
+      return res
+        .status(400)
+        .json({ error: "Type, Wallet Number, and Amount are required." });
+    }
+
+    // Validate amount
+    if (amount <= 0) {
+      return res
+        .status(400)
+        .json({ error: "Withdrawal amount must be greater than 0." });
+    }
+
+    // Check if wallet exists
+    const wallet = await Wallet.findOne({ walletNo });
+    if (!wallet) {
+      return res.status(404).json({ error: "Wallet not found." });
+    }
+
+    // Ensure the wallet has sufficient funds
+    if (wallet.balance < amount) {
+      return res
+        .status(400)
+        .json({ error: "Insufficient wallet balance." });
+    }
+
+    // Create the withdrawal entry in the database
+    const newWithdraw = new Withdraw({
+      type,
+      walletNo: wallet.walletNo,
+      accountNo: type === "Bank Card" ? accountNo : null, // Required only for Bank
+      bankName: type === "Bank Card" ? bankName : null,
+      ifscCode: type === "Bank Card" ? ifscCode : null,
+      cardHolderName: type === "Bank Card" ? cardHolderName : null, // Required only for Card
+      amount,
+      status: "pending", // Default to pending
+    });
+
+    // Save the withdraw amount to the database
+    const savedWithdraw = await newWithdraw.save();
+
+    // Deduct the amount from the wallet balance
+    wallet.balance -= amount;
+    await wallet.save();
+
+    res.status(201).json({
+      message: "Withdrawal request submitted successfully.",
+      withdraw: savedWithdraw,
+    });
+  } catch (error) {
+    console.error("Error handling withdrawal:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+
+
+
+
+
+
