@@ -4,6 +4,8 @@ import User from "../models/User.js";
 import { signupValidator,loginValidator } from "../validators/authValidators.js";
 import Wallet from "../models/Wallet.js";
 import MinAmount from "../models/MinAmount.js";
+import RechargeTransaction from "../models/RechargeTransaction.js";
+
 
 export const registerUser = async (req, res) => {
   try {
@@ -110,6 +112,48 @@ export const getwalletAmount = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching wallet details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+export const createRechargeTransaction = async (req, res) => {
+  const { utr, amount, paymentType, walletNo } = req.body;
+
+  // Check if required fields are provided
+  if (!utr || !amount || !paymentType || !walletNo) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // Check if a transaction with the same UTR already exists
+    const existingTransaction = await RechargeTransaction.findOne({ utr });
+    if (existingTransaction) {
+      return res
+        .status(400)
+        .json({ error: "A transaction with this UTR already exists" });
+    }
+
+    // Create a new recharge transaction
+    const newTransaction = new RechargeTransaction({
+      userId: req.user._id, // Extracted from authenticated token
+      walletNo,
+      paymentType,
+      utr,
+      amount,
+      status: "pending", // Default status
+    });
+
+    // Save transaction
+    await newTransaction.save();
+
+    res.status(201).json({
+      message: "Recharge transaction created successfully",
+      transaction: newTransaction,
+    });
+  } catch (error) {
+    console.error("Error creating transaction:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

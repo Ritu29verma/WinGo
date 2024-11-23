@@ -8,8 +8,8 @@ const PaymentChannelSchema = new mongoose.Schema({
     required: true 
   },
   depositorId: { type: String, required: true },
-  fromBalance: { type: String, required: true },
-  toBalance: { type: String, required: true },
+  fromBalance: { type: Number, required: true },
+  toBalance: { type: Number, required: true },
   qrImage: { type: String }, // Optional
 }, { timestamps: true });
 

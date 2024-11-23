@@ -101,7 +101,7 @@ const PaymentChannels = () => {
                   {channel.fromBalance} - {channel.toBalance}
                 </td>
                 <td className="px-4 py-2 space-x-2">
-                {channel.qrImage && ( // Conditionally show the "View" button
+                {channel.qrImage && ( 
               <button
                 className="bg-orange-500 px-2 py-1 rounded-lg font-bold text-sm transform transition-transform hover:scale-95"
                 onClick={() => setShowImage(channel.qrImage)}

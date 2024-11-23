@@ -13,7 +13,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
 import PaymentManage from './pages/Adminpayment';
-import AddChannelModal from './components/Addchannel';
+import RechargeTransactionsTable from './pages/PendingRecharge';
+import NonPendingTransactionsTable from './pages/ApprovedRecharge';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
 
@@ -43,6 +44,18 @@ function App() {
               <PaymentManage/>
             </ProtectedRoute>
           }/>
+          <Route path="/admin/pendingrecharge" element={
+            <ProtectedRoute>
+              <RechargeTransactionsTable/>
+            </ProtectedRoute>
+          }/>
+
+            <Route path="/admin/approvedrecharge" element={
+                        <ProtectedRoute>
+                          <NonPendingTransactionsTable/>
+                        </ProtectedRoute>
+                      }/>
+
           <Route path="/login" element={<Login />} />
           <Route path="/admin/register" element={<AdminSignup />} />
           <Route path="/admin/login" element={<AdminLogin />} />

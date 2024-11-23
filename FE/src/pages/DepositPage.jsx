@@ -1,40 +1,74 @@
-import React , {useState} from "react";
-import { FaWallet } from "react-icons/fa";
-import { FaPaypal } from "react-icons/fa";
-import { FaBitcoin } from "react-icons/fa";
-import { FaQrcode } from "react-icons/fa";
-
-const channels = {
-    ewallet: [
-  { name: "LuckyPay-APP", balance: "100 - 50K" },
-  { name: "RsPayINR", balance: "100 - 50K" },
-  { name: "OoPay APP", balance: "100 - 50K" },
-  { name: "TBIndia-INR", balance: "100 - 10K" },
-  { name: "FunPay - APP", balance: "100 - 50K" },
-  { name: "Super-APPpay", balance: "100 - 50K" },
-  { name: "HappyPayINR2app", balance: "500 - 50K" },
-  { name: "HappyPayINR2-app", balance: "500 - 50K" },
-] ,
-paytm: [
-  { name: "Paytm Channel 1", balance: "100 - 20K" },
-  { name: "Paytm Channel 2", balance: "200 - 50K" },
-],
-upi: [
-  { name: "UPI Channel 1", balance: "50 - 10K" },
-  { name: "UPI Channel 2", balance: "100 - 25K" },
-],
-usdt: [
-  { name: "USDT Channel 1", balance: "500 - 50K" },
-  { name: "USDT Channel 2", balance: "1000 - 100K" },
-],
-};
+import React, { useState, useEffect } from "react";
+import { FaWallet, FaPaypal, FaBitcoin, FaQrcode } from "react-icons/fa";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import QRModal from "../components/QRModal";
 
 const DepositPage = () => {
-    const [activeTab, setActiveTab] = useState("ewallet");
+  const [channels, setChannels] = useState({});
+  const [selectedType, setSelectedType] = useState("E-Wallet");
+  const [walletDetails, setWalletDetails] = useState({ walletNo: "", totalAmount: 0 });
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
-    const handleTabClick = (tabKey) => {
-        setActiveTab(tabKey); 
-      };
+  useEffect(() => {
+    const fetchWalletDetails = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/auth/wallet-details`,
+          { headers: { Authorization: `${token}` } }
+        );
+        setWalletDetails(response.data);
+      } catch (err) {
+        console.error("Error fetching wallet details:", err);
+      }
+    };
+
+    fetchWalletDetails();
+  }, []);
+
+  useEffect(() => {
+    fetchChannels(selectedType);
+  }, [selectedType]);
+
+  const fetchChannels = async (type) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/admin/channels/type/${type}`
+      );
+      setChannels((prev) => ({ ...prev, [type]: response.data }));
+    } catch (error) {
+      console.error("Failed to fetch channels:", error);
+      toast.error("Failed to fetch channels.");
+    }
+  };
+
+  const handleDeposit = () => {
+    if (!selectedChannel) {
+      toast.error("Please select a channel.");
+      return;
+    }
+    const { fromBalance, toBalance } = selectedChannel;
+    const amount = parseFloat(depositAmount);
+
+    if (isNaN(amount) || amount < fromBalance || amount > toBalance) {
+      toast.error(`Please enter an amount between ₹${fromBalance} and ₹${toBalance}.`);
+      return;
+    }
+
+    // Open the QR modal
+    setIsQRModalOpen(true);
+  };
+
+  const paymentMethods = [
+    { name: "E-Wallet", icon: <FaWallet /> },
+    { name: "Paytm X QR", icon: <FaPaypal /> },
+    { name: "UPI X QR", icon: <FaQrcode /> },
+    { name: "USDT", icon: <FaBitcoin /> },
+  ];
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center text-white p-4">
@@ -50,64 +84,103 @@ const DepositPage = () => {
           <h2 className="text-lg font-bold">Balance</h2>
           <button className="text-sm text-gray-100">⟳</button>
         </div>
-        <p className="text-4xl font-bold my-4">₹1644.32</p>
-        <p className="text-right text-gray-200">**** ****</p>
+        <p className="text-4xl font-bold my-4">₹{walletDetails.totalAmount.toFixed(2)}</p>
+        <p className="text-right text-gray-200">{walletDetails.walletNo}</p>
       </div>
 
-      <div className="bg-black text-white w-full max-w-7xl rounded-lg p-4 mt-4">
       {/* Payment Methods */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        {[
-          { name: "E-Wallet", key: "ewallet", icon: <FaWallet /> },
-          { name: "Paytm × QR", key: "paytm", icon: <FaPaypal /> },
-          { name: "UPI × QR", key: "upi", icon: <FaQrcode /> },
-          { name: "USDT", key: "usdt", icon: <FaBitcoin /> },
-        ].map((tab, index) => (
-          <button
-            key={index}
-            onClick={() => handleTabClick(tab.key)} // Use `key` instead of name transformation
-            className={`flex items-center justify-center px-4 py-2 rounded-lg font-bold gap-2 ${
-              activeTab === tab.key
-                ? "bg-green-500"
-                : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
-            }`}
-          >
-            {tab.icon}
-            {tab.name}
-          </button>
-        ))}
-      </div>
+      <div className="bg-black text-white w-full max-w-7xl rounded-lg p-4 mt-4">
+        <h2 className="text-lg font-bold mb-4">Select Channel</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {paymentMethods.map((type) => (
+            <button
+              key={type.name}
+              onClick={() => setSelectedType(type.name)}
+              className={`flex items-center justify-center px-4 py-2 rounded-lg font-bold gap-2 ${
+                selectedType === type.name
+                  ? "bg-green-500"
+                  : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
+              }`}
+            >
+              {type.icon}
+              {type.name}
+            </button>
+          ))}
+        </div>
 
-      {/* Content */}
-      <div className="text-center">
-        {channels[activeTab]?.length > 0 ? (
-          <div>
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h2 className="text-lg font-bold mb-4">
-                Available Channels for{" "}
-                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {channels[activeTab].map((channel, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-900 p-4 rounded-lg text-left shadow-md"
-                  >
-                    <p className="font-bold">{channel.name}</p>
-                    <p className="text-sm text-gray-400">
-                      Balance: {channel.balance}
-                    </p>
-                  </div>
-                ))}
+        {/* Channels */}
+        <div className="text-center">
+          {channels[selectedType]?.length > 0 ? (
+            <div>
+              <div className="bg-gray-800 rounded-lg p-4">
+                <h2 className="text-lg font-bold mb-4">
+                  Available Channels for {selectedType}
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {channels[selectedType].map((channel) => (
+                    <div
+                      key={channel._id}
+                      onClick={() => setSelectedChannel(channel)}
+                      className={`bg-gray-900 p-4 rounded-lg text-left shadow-md cursor-pointer ${
+                        selectedChannel?._id === channel._id
+                          ? "bg-gradient-to-l from-blue-500 to-blue-900"
+                          : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
+                      }`}
+                    >
+                      <p className="font-bold">{channel.channelName}</p>
+                      <p className="text-sm text-gray-400">
+                        Balance: ₹{channel.fromBalance} - ₹{channel.toBalance}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <p>No channels available.</p>
-        )}
+          ) : (
+            <p>No channels available for {selectedType}.</p>
+          )}
+        </div>
       </div>
 
-    </div>
+      {/* Deposit Amount Section */}
+      {selectedChannel && (
+        <div className="p-4 mt-4 bg-gray-800 rounded-lg w-full max-w-lg">
+          <h1 className="text-lg font-bold mb-4">Deposit Amount</h1>
+          <div className="space-y-4">
+            <div className="flex items-center bg-gray-700 rounded-md p-3">
+              <span className="text-xl font-bold mr-2">₹</span>
+              <input
+                type="number"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                placeholder="0"
+                className="bg-transparent text-white text-xl w-full focus:outline-none"
+              />
+            </div>
+            <p className="text-sm text-gray-400">
+              Enter an amount between ₹{selectedChannel.fromBalance} and ₹
+              {selectedChannel.toBalance}.
+            </p>
+          </div>
+          <button
+            onClick={handleDeposit}
+            className="bg-gradient-to-l from-blue-500 to-blue-900 text-white w-full py-3 rounded-lg mt-6 font-bold hover:opacity-90"
+          >
+            Deposit
+          </button>
+        </div>
+      )}
+
+      {/* QR Modal */}
+      <QRModal
+      isOpen={isQRModalOpen}
+      onClose={() => setIsQRModalOpen(false)}
+      channel={selectedChannel}
+      depositAmount={depositAmount}
+      walletDetails={walletDetails}
+      setDepositAmount={setDepositAmount}
+    />
+
 
     </div>
   );

@@ -6,6 +6,9 @@ import PaymentChannel from '../models/PaymentChannel.js';
 import fs from "fs";
 import path from "path";
 import multer from "multer";
+import RechargeTransaction from "../models/RechargeTransaction.js";
+import User from "../models/User.js";
+import Wallet from "../models/Wallet.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -227,3 +230,163 @@ export const deleteChannel = async (req, res) => {
       res.status(400).json({ error: error.message });
     }
   };
+
+
+export const getRechargeByStatus = async(req,res)=>{
+  const { status } = req.query;
+
+  if (!status || !["approved", "pending"].includes(status)) {
+    return res.status(400).json({ error: "Invalid or missing status parameter." });
+  }
+
+  try {
+    const transactions = await RechargeTransaction.find({ status })
+      .populate({
+        path: "userId",
+        select: "phoneNo", // Include only the phoneNo field from the User model
+        model: User,
+      })
+      .sort({ createdAt: -1 }); // Sort by latest transactions
+
+    const result = transactions.map((transaction) => ({
+      id: transaction._id,
+      phoneNo: transaction.userId?.phoneNo || "N/A",
+      walletNo: transaction.walletNo,
+      utr: transaction.utr,
+      amount: transaction.amount,
+      paymentType: transaction.paymentType,
+      time: transaction.createdAt,
+      status: transaction.status,
+    }));
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+export const ApproveRecharge = async(req,res) =>{
+  const { transactionId } = req.body;
+
+  if (!transactionId) {
+    return res.status(400).json({ error: "Transaction ID is required." });
+  }
+  try {
+    const transaction = await RechargeTransaction.findById(transactionId);
+    if (!transaction) {
+      return res.status(404).json({ error: "Recharge transaction not found." });
+    }
+
+    if (transaction.status === "rejected") {
+      return res
+        .status(400)
+        .json({ error: "Cannot approve a rejected transaction." });
+    }
+    const wallet = await Wallet.findOne({ walletNo: transaction.walletNo });
+    if (!wallet) {
+      return res.status(404).json({ error: "Wallet not found." });
+    }
+    wallet.totalAmount += transaction.amount;
+    wallet.updatedAt = new Date();
+    await wallet.save();
+    transaction.status = "approved";
+    transaction.updatedAt = new Date();
+    await transaction.save();
+
+    return res.status(200).json({
+      message: "Transaction approved successfully.",
+      wallet,
+      transaction,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: "An error occurred while approving the transaction.",
+    });
+  }
+};
+
+
+
+export const rejectRecharge = async (req, res) => {
+  const { transactionId } = req.body;
+
+  if (!transactionId) {
+    return res.status(400).json({ error: "Transaction ID is required." });
+  }
+
+  try {
+    const transaction = await RechargeTransaction.findById(transactionId);
+    if (!transaction) {
+      return res.status(404).json({ error: "Recharge transaction not found." });
+    }
+    if (transaction.status === "approved") {
+      return res
+        .status(400)
+        .json({ error: "Cannot reject an already approved transaction." });
+    }
+    if (transaction.status === "rejected") {
+      return res
+        .status(400)
+        .json({ error: "This transaction is already rejected." });
+    }
+    transaction.status = "rejected";
+    transaction.updatedAt = new Date();
+    await transaction.save();
+
+    return res.status(200).json({
+      message: "Transaction rejected successfully.",
+      transaction,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: "An error occurred while rejecting the transaction.",
+    });
+  }
+};
+
+
+
+export const getNonPendingTransactions = async (req, res) => {
+  try {
+    // Query to fetch transactions excluding "pending" status and sorted by most recent
+    const transactions = await RechargeTransaction.find({ status: { $ne: "pending" } })
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order (most recent first)
+      .populate({
+        path: "userId",
+        select: "phoneNo", // Include only the phoneNo field from the User model
+        model: User,
+      });
+
+    // Map the transactions to the desired format
+    const result = transactions.map((transaction) => ({
+      id: transaction._id,
+      phoneNo: transaction.userId?.phoneNo || "N/A", // Fallback if user data is missing
+      walletNo: transaction.walletNo,
+      utr: transaction.utr,
+      amount: transaction.amount,
+      paymentType: transaction.paymentType,
+      time: transaction.createdAt,
+      status: transaction.status,
+    }));
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "No non-pending transactions found." });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Non-pending transactions fetched successfully.",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    // Internal server error response
+    res.status(500).json({
+      error: "An error occurred while fetching non-pending transactions.",
+    });
+  }
+};

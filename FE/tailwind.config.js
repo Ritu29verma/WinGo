@@ -13,6 +13,7 @@ export default {
         red: '#e74c3c',
         customBlue: '#192434',
         customHoverBlue: '#1D4ED8',
+        darkRed: '#B22222'
       },
     },
   },

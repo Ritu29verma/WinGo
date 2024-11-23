@@ -48,7 +48,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         </li>
         <li>
           <Link
-            to="#"
+            to="/admin/pendingrecharge"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
             Pending Recharge
@@ -66,7 +66,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
         <li>
           <Link
-            to="#"
+            to="/admin/approvedrecharge"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
             Recharge (Approved)

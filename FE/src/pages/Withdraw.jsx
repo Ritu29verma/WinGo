@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaCreditCard, FaBitcoin, FaPlus, FaHeadset } from "react-icons/fa";
 
 const Withdraw = () => {
-  const [activeTab, setActiveTab] = useState("bank");
+  const [activeTab, setActiveTab] = useState("Bank Card");
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -31,9 +31,9 @@ const Withdraw = () => {
       <div className="w-full max-w-5xl mt-6 mb-6 flex justify-center items-center">
       <div className="grid items-center grid-cols-2 gap-4">
           <button
-            onClick={() => handleTabChange("bank")}
+            onClick={() => handleTabChange("Bank Card")}
             className={`flex flex-col items-center justify-center p-4 px-10 md:px-24 rounded-lg text-center font-bold ${
-              activeTab === "bank"
+              activeTab === "Bank Card"
                 ? "bg-green-500"
                 : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
             }`}
@@ -42,9 +42,9 @@ const Withdraw = () => {
             Bank Card
           </button>
           <button
-            onClick={() => handleTabChange("usdt")}
+            onClick={() => handleTabChange("USDT")}
             className={`flex flex-col items-center justify-center p-4 rounded-lg text-center font-bold ${
-              activeTab === "usdt"
+              activeTab === "USDT"
                 ? "bg-green-500"
                 : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
             }`}
@@ -56,18 +56,53 @@ const Withdraw = () => {
       </div>
 
       {/* Conditional Content */}
-      {activeTab === "bank" && (
-        <div className="bg-gray-900 w-full max-w-5xl min-h-screen flex flex-col items-center px-4 py-6 text-white">
+      {activeTab === "Bank Card" && (
+        <div className="bg-gray-900 w-full max-w-6xl min-h-screen flex flex-col items-center px-4 py-6 text-white">
           
 
         {/* Add Bank Account */}
-        <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow w-full max-w-2xl flex flex-col items-center">
-          <button className="flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed border-gray-400 rounded-lg">
-            <FaPlus className="text-gray-400 text-xl" />
-            <span className="text-gray-400 text-sm mt-1">Add</span>
-          </button>
-          <p className="text-center text-sm mt-4">Add a bank account number</p>
-        </div>
+        <div className="space-y-6 m-4 w-full max-w-2xl">
+  {/* Account Number */}
+  <div className="flex items-center justify-between">
+  <label className="text-white text-xl w-1/3">Account Number:</label>
+    <input
+      type="number"
+      placeholder="Enter Account Number"
+      className=" text-white w-2/3 bg-gray-600 rounded-md p-3 text-xl focus:outline-none"
+    />
+  </div>
+
+  {/* Cardholder Name */}
+  <div className="flex items-center justify-between ">
+    <label className="text-white text-xl w-1/3">Cardholder Name:</label>
+    <input
+      type="text"
+      placeholder="Enter Cardholder Name"
+      className=" text-white bg-gray-600 rounded-md p-3  text-xl w-2/3 focus:outline-none"
+    />
+  </div>
+
+  {/* Bank Name */}
+  <div className="flex items-center justify-between">
+    <label className="text-white text-xl w-1/3">Bank Name:</label>
+    <input
+      type="text"
+      placeholder="Enter Bank Name"
+      className=" text-white bg-gray-600 rounded-md p-3  text-xl w-2/3 focus:outline-none"
+    />
+  </div>
+
+  {/* IFSC Code */}
+  <div className="flex items-center justify-between ">
+    <label className="text-white  text-xl w-1/3">IFSC Code:</label>
+    <input
+      type="text"
+      placeholder="Enter IFSC Code"
+      className=" text-white bg-gray-600 rounded-md p-3  text-xl w-2/3 focus:outline-none"
+    />
+  </div>
+</div>
+
 
         {/* Beneficiary Warning */}
         <p className="text-red-500 text-center text-sm mt-4">
@@ -131,7 +166,7 @@ const Withdraw = () => {
       </div>
       )}
 
-      {activeTab === "usdt" && (
+      {activeTab === "USDT" && (
        
          <div className="bg-gray-900 min-h-screen w-full max-w-5xl flex flex-col items-center px-4 py-6 text-white">
          
