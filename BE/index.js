@@ -9,8 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import {initializeSocket} from "./socket.js"; 
 import gameRoutes from "./routes/gameRoutes.js"
-
-
+import path from "path";
 
 dotenv.config();
 
@@ -23,7 +22,7 @@ connectDB();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use("/images", express.static(path.resolve("images")));
 app.use("/auth", authRoutes);
 // app.use("/api/game", gameRoutes);
 app.use("/admin", adminRoutes);

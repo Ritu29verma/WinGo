@@ -84,7 +84,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
         <li>
           <Link
-            to="#"
+            to="/admin/paymentmanage"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
             Payment Manage

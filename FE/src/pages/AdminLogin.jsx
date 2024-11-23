@@ -155,7 +155,7 @@ const AdminLogin = () => {
           </span>
         </p>
       </div>
-      <ToastContainer />
+
     </div>
   );
 }
