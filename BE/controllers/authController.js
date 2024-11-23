@@ -93,3 +93,23 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: "Network error. Please try again later." });
   }
 };
+
+
+
+export const getwalletAmount = async (req, res) => {
+  try {
+    const wallet = await Wallet.findOne({ userId: req.user._id });
+
+    if (!wallet) {
+      return res.status(404).json({ error: "Wallet not found for this user" });
+    }
+
+    res.status(200).json({
+      walletNo: wallet.walletNo,
+      totalAmount: wallet.totalAmount,
+    });
+  } catch (error) {
+    console.error("Error fetching wallet details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
