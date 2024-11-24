@@ -10,12 +10,6 @@ const NonPendingTransactionsTable = () => {
   const fetchNonPendingTransactions = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Authentication token missing. Please log in.");
-        return;
-      }
-
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/admin/non-pending-transactions`
       );
@@ -40,9 +34,9 @@ const NonPendingTransactionsTable = () => {
 
   return (
     <AdminNavbar>
-      <div className="p-5 bg-gray-700 h-screen">
-        <h2 className="text-2xl font-bold mb-5 text-center text-gray-100">
-          Non-Pending Transactions
+      <div className="p-5 bg-gray-700 min-h-screen">
+        <h2 className="md:text-2xl text-lg font-bold mb-5 text-center text-gray-100">
+          Recharge Requests
         </h2>
         {isLoading ? (
           <p className="text-center text-gray-500">Loading...</p>

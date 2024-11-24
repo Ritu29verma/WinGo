@@ -94,7 +94,7 @@ const RechargeTransactionsTable = () => {
   return (
     <AdminNavbar>
       <div className="p-5 bg-gray-700 h-screen">
-        <h2 className="text-2xl font-bold mb-5 text-center text-gray-100">Pending Transactions</h2>
+        <h2 className="text-2xl font-bold mb-5 text-center text-gray-100">Pending Recharge Requests</h2>
         {isLoading ? (
           <p className="text-center text-gray-500">Loading...</p>
         ) : transactions.length === 0 ? (

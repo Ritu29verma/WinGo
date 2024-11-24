@@ -57,7 +57,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
         <li>
           <Link
-            to="#"
+            to="/admin/pendingwithdrawl"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
             Pending Withdrawal
@@ -75,7 +75,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
         <li>
           <Link
-            to="#"
+            to="/admin/approvedwithdrawl"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
             Withdrawal (Approved)
