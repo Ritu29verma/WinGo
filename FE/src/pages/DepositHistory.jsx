@@ -51,7 +51,7 @@ const DepositHistory = () => {
             <table className="min-w-full bg-gray-800 text-white">
               <thead>
                 <tr className="bg-gray-500">
-                  <th className="px-4 py-2 text-center">Wallet No</th>
+                  <th className="px-4 py-2 text-center">Order ID</th>
                   <th className="px-4 py-2 text-center">Payment Type</th>
                   <th className="px-4 py-2 text-center">UTR</th>
                   <th className="px-4 py-2 text-center">Amount</th>
@@ -65,7 +65,7 @@ const DepositHistory = () => {
                     key={transaction._id}
                     className="border-t border-gray-600 text-center"
                   >
-                    <td className="px-4 py-2">{transaction.walletNo}</td>
+                    <td className="px-4 py-2">{transaction._id}</td>
                     <td className="px-4 py-2">{transaction.paymentType}</td>
                     <td className="px-4 py-2">{transaction.utr}</td>
                     <td className="px-4 py-2">₹{transaction.amount}</td>
