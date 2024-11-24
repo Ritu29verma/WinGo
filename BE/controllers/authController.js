@@ -248,3 +248,27 @@ export const getTransactionsByUserId = async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching transactions." });
   }
 };
+
+
+
+
+export const getWithdrawalsByWalletNo = async (req, res) => {
+  try {
+    const { walletNo } = req.query; // walletNo passed as query parameter
+    if (!walletNo) {
+      return res.status(400).json({ error: "walletNo is required" });
+    }
+    const withdrawals = await Withdraw.find({ walletNo }).sort({ createdAt: -1 });
+    if (withdrawals.length === 0) {
+      return res.status(404).json({ message: "No withdrawal records found for this wallet number." });
+    }
+    res.status(200).json({ withdrawals });
+  } catch (error) {
+    console.error("Error fetching withdrawals:", error);
+    res.status(500).json({ error: "An error occurred while fetching withdrawal records." });
+  }
+};
+
+
+
+

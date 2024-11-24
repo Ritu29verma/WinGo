@@ -3,6 +3,7 @@ import { FaCreditCard, FaBitcoin, FaPlus, FaHeadset } from "react-icons/fa";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const Withdraw = () => {
   const [activeTab, setActiveTab] = useState("Bank Card");
@@ -15,6 +16,9 @@ const Withdraw = () => {
     ifscCode: "",
     amount: "",
   });
+  const navigate = useNavigate();
+
+  
 
   useEffect(() => {
     const fetchWalletDetails = async () => {
@@ -100,13 +104,16 @@ const Withdraw = () => {
       toast.error("An error occurred. Please try again later.");
     }
   };
+  const goToWithdrawalHistory = () => {
+    navigate("/withdrawal-history", { state: { walletNo: walletDetails.walletNo } });
+  };
 
   return (
     <div className="bg-gray-900 min-h-screen text-white p-4 flex flex-col items-center">
       {/* Header */}
       <div className="flex justify-between items-center w-full max-w-5xl px-4">
         <h1 className="text-lg font-bold">Withdraw</h1>
-        <button className="text-sm text-blue-400">Withdraw history</button>
+        <button onClick={goToWithdrawalHistory} className="text-sm text-blue-400">Withdraw history</button>
       </div>
 
       {/* Balance Card */}
