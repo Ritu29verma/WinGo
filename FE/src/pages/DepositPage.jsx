@@ -4,6 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import QRModal from "../components/QRModal";
+import { Link } from "react-router-dom";
 
 const DepositPage = () => {
   const [channels, setChannels] = useState({});
@@ -75,7 +76,10 @@ const DepositPage = () => {
       {/* Header Section */}
       <div className="flex justify-between w-full px-10 mb-4">
         <h1 className="text-lg font-bold">Deposit</h1>
+        <Link
+            to="/deposit-history">
         <button className="text-sm text-blue-400">Deposit history</button>
+        </Link>
       </div>
 
       {/* Balance Card */}

@@ -233,10 +233,10 @@ const Withdraw = () => {
           </div>
 
            {/* Withdrawable Balance */}
-           <div className="flex justify-between items-center text-gray-400 text-sm mt-4">
+           {/* <div className="flex justify-between items-center text-gray-400 text-sm mt-4">
              <p>Withdrawable balance ₹1177.42</p>
              <button className="text-blue-400 font-medium">All</button>
-           </div>
+           </div> */}
 
                {/* Withdraw Button */}
                <button

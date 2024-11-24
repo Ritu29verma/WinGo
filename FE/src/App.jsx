@@ -17,6 +17,7 @@ import RechargeTransactionsTable from './pages/PendingRecharge';
 import NonPendingTransactionsTable from './pages/ApprovedRecharge';
 import PendingWithdrawalsTable from './pages/PendingWithdrawl';
 import NonPendingWithdrawalsTable from './pages/ApprovedWithdrawal';
+import DepositHistory from './pages/DepositHistory';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
@@ -71,6 +72,7 @@ function App() {
             </ProtectedRoute>
           }/>
           <Route path="/login" element={<Login />} />
+          <Route path="/deposit-history" element={<DepositHistory/>} />
           <Route path="/admin/register" element={<AdminSignup />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/" element={<Home />} />

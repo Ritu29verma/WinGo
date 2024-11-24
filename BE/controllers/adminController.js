@@ -10,6 +10,8 @@ import RechargeTransaction from "../models/RechargeTransaction.js";
 import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.resolve("images");
@@ -25,6 +27,8 @@ const storage = multer.diskStorage({
 });
 
 export const upload = multer({ storage });
+
+
 
 export const registerAdmin = async (req, res) => {
   try {
@@ -52,6 +56,9 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
+
+
+
 export const loginAdmin = async (req, res) => {
     try {
       const { phoneNo, password } = req.body;
@@ -78,6 +85,9 @@ export const loginAdmin = async (req, res) => {
     }
   };
   
+
+
+
   export const checkAdmin = async (req, res) => {
     try {
       const token = req.headers.authorization?.split(" ")[1];
@@ -101,17 +111,14 @@ export const loginAdmin = async (req, res) => {
   export const updateMinAmount = async (req, res) => {
     try {
       const { value } = req.body;
-  
       if (!value || typeof value !== "number" || value <= 0) {
         return res.status(400).json({ error: "Invalid value for minimum amount." });
       }
-  
       const minAmountDoc = await MinAmount.findOneAndUpdate(
         {},
         { value, updatedAt: Date.now() },
         { new: true, upsert: true }
       );
-  
       res.status(200).json({ message: "Minimum amount updated successfully", minAmount: minAmountDoc });
     } catch (error) {
       console.error("Error updating minimum amount:", error);
@@ -119,15 +126,14 @@ export const loginAdmin = async (req, res) => {
     }
   };
 
+
+
   export const getMinAmount = async (req, res) => {
     try {
-      // Retrieve the document. If it doesn't exist, return a default value.
       const minAmountDoc = await MinAmount.findOne();
-  
       if (!minAmountDoc) {
         return res.status(404).json({ message: "Minimum amount not set." });
       }
-  
       res.status(200).json({ minAmount: minAmountDoc.value });
     } catch (error) {
       console.error("Error fetching minimum amount:", error);
@@ -136,7 +142,7 @@ export const loginAdmin = async (req, res) => {
   };
 
   export const createChannel = [
-    upload.single("qrImage"), // Handle QR Image upload
+    upload.single("qrImage"),
     async (req, res) => {
       try {
         const { channelName, type, depositorId, fromBalance, toBalance } = req.body;
@@ -160,26 +166,24 @@ export const loginAdmin = async (req, res) => {
   ];
   
   export const updateChannel = [
-    upload.single("qrImage"), // Handle QR Image upload
+    upload.single("qrImage"),
     async (req, res) => {
       try {
-        // Check if a new file is uploaded
+
         const newFile = req.file ? req.file.filename : null;
-    
-        // Fetch the existing channel
+  
         const channel = await PaymentChannel.findById(req.params.id);
         if (!channel) return res.status(404).json({ error: "Channel not found" });
     
-        // If a new file is uploaded, delete the old file
         if (newFile && channel.qrImage) {
           const oldFilePath = path.resolve("images", channel.qrImage);
           if (fs.existsSync(oldFilePath)) {
-            fs.unlinkSync(oldFilePath); // Delete the old file
+            fs.unlinkSync(oldFilePath);
           }
         }
         const updatedData = {
           ...req.body,
-          qrImage: newFile || channel.qrImage, // Use the new file if uploaded, otherwise keep the old one
+          qrImage: newFile || channel.qrImage,
         };
         const updatedChannel = await PaymentChannel.findByIdAndUpdate(
           req.params.id,
@@ -195,7 +199,7 @@ export const loginAdmin = async (req, res) => {
   ];
 
   
-// Delete a payment channel
+
 export const deleteChannel = async (req, res) => {
   try {
     const channel = await PaymentChannel.findById(req.params.id);
@@ -203,15 +207,13 @@ export const deleteChannel = async (req, res) => {
       return res.status(404).json({ error: "Channel not found" });
     }
 
-    // Delete the associated file if it exists
     if (channel.qrImage) {
       const filePath = path.resolve("images", channel.qrImage);
       if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath); // Remove the file
+        fs.unlinkSync(filePath);
       }
     }
 
-    // Delete the channel from the database
     await PaymentChannel.findByIdAndDelete(req.params.id);
 
     res.status(200).json({ message: "Channel deleted successfully" });
@@ -221,7 +223,6 @@ export const deleteChannel = async (req, res) => {
 };
 
   
-  // Get channels by type
   export const getChannelsByType = async (req, res) => {
     try {
       const channels = await PaymentChannel.find({ type: req.params.type });
@@ -353,19 +354,17 @@ export const rejectRecharge = async (req, res) => {
 
 export const getNonPendingTransactions = async (req, res) => {
   try {
-    // Query to fetch transactions excluding "pending" status and sorted by most recent
     const transactions = await RechargeTransaction.find({ status: { $ne: "pending" } })
-      .sort({ createdAt: -1 }) // Sort by createdAt in descending order (most recent first)
+      .sort({ createdAt: -1 })
       .populate({
         path: "userId",
-        select: "phoneNo", // Include only the phoneNo field from the User model
+        select: "phoneNo",
         model: User,
       });
 
-    // Map the transactions to the desired format
     const result = transactions.map((transaction) => ({
       id: transaction._id,
-      phoneNo: transaction.userId?.phoneNo || "N/A", // Fallback if user data is missing
+      phoneNo: transaction.userId?.phoneNo || "N/A",
       walletNo: transaction.walletNo,
       utr: transaction.utr,
       amount: transaction.amount,
@@ -384,7 +383,6 @@ export const getNonPendingTransactions = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    // Internal server error response
     res.status(500).json({
       error: "An error occurred while fetching non-pending transactions.",
     });
