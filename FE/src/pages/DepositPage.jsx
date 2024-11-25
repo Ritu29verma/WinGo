@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import QRModal from "../components/QRModal";
 import { Link } from "react-router-dom";
+import Header from "../components/Header"
 
 const DepositPage = () => {
   const [channels, setChannels] = useState({});
@@ -72,7 +73,10 @@ const DepositPage = () => {
   ];
 
   return (
+    <div>
+    <Header isLogout={false} isWingo={false}/> 
     <div className="bg-gray-900 min-h-screen flex flex-col items-center text-white p-4">
+      
       {/* Header Section */}
       <div className="flex justify-between w-full px-10 mb-4">
         <h1 className="text-lg font-bold">Deposit</h1>
@@ -186,6 +190,7 @@ const DepositPage = () => {
     />
 
 
+    </div>
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React, { useState , useEffect } from "react";
 import classNames from 'classnames';
+import { ToastContainer,toast } from 'react-toastify';
+import socket from "../socket";
 const PopupCard = ({ isOpen, onClose, content, color }) => {
   const [quantity, setQuantity] = useState(1); 
   const [balance, setBalance] = useState(1); 
@@ -10,6 +12,35 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
       setBalance(1);  
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    const handleBetResult = (data) => {
+      const { success, amount, period, result } = data;
+      const { number, color, size } = result;
+    
+      if (success) {
+        toast.success(
+          `🎉 You won! Amount: ₹${amount.toFixed(2)}\n` +
+          `🎲 Result: Number: ${number}, Color: ${color}, Size: ${size}\n` +
+          `📅 Period: ${period}`
+        );
+      } else {
+        toast.info(
+          `😞 You lost. Amount lost: ₹${Math.abs(amount).toFixed(2)}\n` +
+          `🎲 Result: Number: ${number}, Color: ${color}, Size: ${size}\n` +
+          `📅 Period: ${period}`
+        );
+      }
+    };
+
+    socket.on("betResult", handleBetResult);
+
+
+    return () => {
+      socket.off("betResult", handleBetResult);
+    };
+  }, [socket]);
+
 
   const handleBalanceClick = (value) => {
     setBalance(value); 
@@ -33,10 +64,24 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
     });
   };
 
+  const handlePlaceBet = () => {
+    const userId = JSON.parse(localStorage.getItem("user_id"));
+    const data = { userId, content, purchaseAmount: quantity };
+
+    socket.emit("userBet", data, (response) => {
+        if (response.success) {
+            toast.success("Bet placed successfully");
+        } else {
+            toast.error("Failed to place bet:", response.message);
+        }
+    });
+
+    onClose();
+};
 
   return (
     <div className=" ">
-       
+       <ToastContainer/>
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -161,6 +206,7 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
       Cancel
     </button>
     <button
+    onClick={handlePlaceBet}
       className="px-14 py-2"
       style={{
         backgroundColor:

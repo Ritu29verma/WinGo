@@ -10,6 +10,7 @@ import seven from "../assets/7.png";
 import eight from "../assets/8.png";
 import nine from "../assets/9.png";
 import PopupCard from "./PopupCard";
+// import WinOrLoss from "./WinOrLoss";
 
 const GameSection = () => {
   const [popup, setPopup] = useState({ isOpen: false, color: "", content: "" });
@@ -47,7 +48,7 @@ const GameSection = () => {
       default:
         bgColor = "gray";
     }
-    setPopup({ isOpen: true, color: bgColor, content: `Number ${index}` });
+    setPopup({ isOpen: true, color: bgColor, content: `${index}` });
   };
 
   const closePopup = () => setPopup({ isOpen: false, color: "", content: "" });
@@ -59,7 +60,9 @@ const GameSection = () => {
 
 
   return (
-    <div className="bg-black w-full max-w-7xl rounded-lg p-4 shadow-lg">
+    
+    <div className=" flex items-center justify-center bg-black">
+  <div className="bg-black items-center w-full max-w-7xl rounded-lg p-5 mb-4 shadow-lg">
       {/* Color Buttons */}
       <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-4">
         {colors.map((color) => (
@@ -129,7 +132,16 @@ const GameSection = () => {
         content={popup.content}
         color={popup.color}
       />
+
+      {/* <WinOrLoss
+        isWin={isWin}
+        lotteryResult={{ color: "Red", number: 7, size: "Small" }}
+        bonus={100}
+        period={5656}
+        autoClose={true}
+      /> */}
     </div>
+        </div>
   );
 };
 

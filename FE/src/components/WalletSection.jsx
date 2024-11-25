@@ -1,38 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import socket from "../socket";
 const WalletSection = ({ token }) => {
   const [walletDetails, setWalletDetails] = useState({ walletNo: "", totalAmount: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+
+  const fetchWalletDetails = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("User is not authenticated. Please log in.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/wallet-details`, {
+        headers: { Authorization: `${token}` },
+      });
+      setWalletDetails(response.data);
+      setError(null); // Clear any previous error
+    } catch (err) {
+      console.error("Error fetching wallet details:", err);
+      setError("Failed to fetch wallet details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch of wallet details
   useEffect(() => {
-    const fetchWalletDetails = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("User is not authenticated. Please log in.");
-        setLoading(false);
-        return;
-      }
-      try {
-
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/wallet-details`, {
-          headers: { Authorization: `${token}` },
-        });
-        setWalletDetails(response.data);
-      } catch (err) {
-        console.error("Error fetching wallet details:", err);
-        setError("Failed to fetch wallet details");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWalletDetails();
-  }, [token]);
+  }, []);
 
   const handleDeposit = () => {
     navigate("/wingo/deposit");
@@ -41,6 +44,19 @@ const WalletSection = ({ token }) => {
   const handleWithdraw = () => {
     navigate("/wingo/withdraw");
   };
+  useEffect(() => {
+    const handleBetResult = (data) => {
+      console.log("Bet result received:", data);
+      fetchWalletDetails();
+    };
+
+    socket.on("betResult", handleBetResult);
+
+    // Clean up the listener on unmount
+    return () => {
+      socket.off("betResult", handleBetResult);
+    };
+  }, [socket]);
 
   if (loading) {
     return (

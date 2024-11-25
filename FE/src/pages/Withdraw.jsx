@@ -4,6 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 
 const Withdraw = () => {
   const [activeTab, setActiveTab] = useState("Bank Card");
@@ -109,15 +110,17 @@ const Withdraw = () => {
   };
 
   return (
+    <div>
+    <Header isLogout={false} isWingo={false}/> 
     <div className="bg-gray-900 min-h-screen text-white p-4 flex flex-col items-center">
       {/* Header */}
-      <div className="flex justify-between items-center w-full max-w-5xl px-4">
+      <div className="flex justify-between items-center w-full px-10 mb-4">
         <h1 className="text-lg font-bold">Withdraw</h1>
         <button onClick={goToWithdrawalHistory} className="text-sm text-blue-400">Withdraw history</button>
       </div>
 
       {/* Balance Card */}
-      <div className="bg-gradient-to-r from-green-400 via-yellow-400 to-green-500 p-6 rounded-lg shadow-md w-full max-w-4xl mt-4 text-white">
+      <div className="bg-gradient-to-r from-green-400 via-yellow-400 to-green-500 p-6 rounded-lg shadow-md w-full max-w-6xl mt-4 text-white">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold">Available Balance</h2>
           <button className="text-sm">⟳</button>
@@ -126,9 +129,9 @@ const Withdraw = () => {
         <p className="text-right text-gray-200">{walletDetails.walletNo}</p>
       </div>
 
-    <div className="bg-black text-white w-full max-w-5xl rounded-lg p-4 mt-4" >
+    <div className="bg-black text-white w-full max-w-7xl rounded-lg p-4 mt-4" >
           {/* Withdrawal Methods */}
-      <div className="w-full max-w-5xl mt-6 mb-6 flex justify-center items-center">
+      <div className="w-full max-w-7xl mt-6 mb-6 flex justify-center items-center">
       <div className="grid items-center grid-cols-2 gap-4">
           <button
             onClick={() => handleTabChange("Bank Card")}
@@ -161,7 +164,7 @@ const Withdraw = () => {
           
 
         {/* Add Bank Account */}
-        <div className="space-y-6 m-4 w-full max-w-2xl">
+        <div className="space-y-6 m-4 w-full max-w-3xl">
   {/* Account Number */}
   <div className="flex items-center justify-between">
   <label className="text-white text-xl w-1/3">Account Number:</label>
@@ -222,7 +225,7 @@ const Withdraw = () => {
         </p>
 
         {/* Withdrawal Form */}
-        <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow w-full max-w-2xl">
+        <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow w-full max-w-3xl">
           <h2 className="text-lg font-bold mb-4">Select amount of USTD</h2>
           {/* Input Section */}
           <div className="space-y-4">
@@ -359,6 +362,7 @@ const Withdraw = () => {
          </div>
        </div>
       )}
+    </div>
     </div>
     </div>
   );

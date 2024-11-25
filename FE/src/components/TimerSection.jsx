@@ -7,35 +7,38 @@ const TimerSection = () => {
   const [timerStatus, setTimerStatus] = useState(false);
     const [currentGameId, setCurrentGameId] = useState(null);
     const [timerDigits, setTimerDigits] = useState([0, 0, 0, 0]);
+    const [alertNumber, setAlertNumber] = useState(null);
 
-  useEffect(() => {
-    if (timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1);
-      }, 1000);
+ // Countdown alert for last 5 seconds
+ useEffect(() => {
+  if (timeRemaining <= 5 && timeRemaining > 0) {
+    setAlertNumber(parseInt(timeRemaining, 10));  // Display the countdown number
+    const timeout = setTimeout(() => {
+      setAlertNumber(null); // Clear the number after 1 second
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }
+}, [timeRemaining]);
 
-      return () => clearInterval(timer);
-    }
-  }, [timeRemaining]);
+// Synchronize timer with server updates
+useEffect(() => {
+  socket.on("timerUpdate", ({ minutes, seconds, isTimerActive }) => {
+    const totalSeconds = minutes * 60 + seconds;
 
-  useEffect(() => {
-    setTimeRemaining(selectedTime); // Reset countdown when timer changes
-  }, [selectedTime]);
+    // Update timeRemaining to match server time
+    setTimeRemaining(totalSeconds);
 
-  useEffect(() => {
-    // Listen for timer updates
-    socket.on("timerUpdate", ({ minutes, seconds, isTimerActive }) => {
-      const minuteString = String(minutes).padStart(2, "0");
-      const secondString = String(seconds).padStart(2, "0");
-  
-      setTimerDigits([
-        ...minuteString.split("").map(Number),
-        ...secondString.split("").map(Number),
-      ]);
-  
-      setTimerStatus(isTimerActive);
-    });
-  
+    const minuteString = String(minutes).padStart(2, "0");
+    const secondString = String(seconds).padStart(2, "0");
+
+    // Update the digits for display
+    setTimerDigits([
+      ...minuteString.split("").map(Number),
+      ...secondString.split("").map(Number),
+    ]);
+
+    setTimerStatus(isTimerActive);
+  });
     // Listen for gameId event
     socket.on("gameId", ({ gameId }) => {
       setCurrentGameId(gameId);
@@ -107,12 +110,14 @@ const TimerSection = () => {
         <div className="text-white p-2"> {currentGameId}</div>
       </div>
         
-      {/* Countdown Alert for Last Few Seconds */}
-      {/* {timeRemaining <= 5 && timeRemaining > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center text-white text-3xl sm:text-5xl font-bold z-50">
-          {      }
-        </div>
-      )} abhi prop likhna h */}
+     {/* Countdown Alert for Last Few Seconds */}
+     { alertNumber && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-black rounded-lg p-10 shadow-lg transform scale-95 animate-fade text-white text-4xl sm:text-5xl md:text-6xl font-bold">
+      {alertNumber} 
+    </div>
+  </div>
+)}
     </div>
   );
 };
