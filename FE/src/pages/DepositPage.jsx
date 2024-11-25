@@ -90,7 +90,12 @@ const DepositPage = () => {
       <div className="bg-gradient-to-r w-full max-w-6xl from-green-400 via-yellow-400 to-green-600 p-6 rounded-lg shadow-lg mb-6 text-white">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold">Balance</h2>
-          <button className="text-sm text-gray-100">⟳</button>
+          <button 
+            className="text-sm" 
+            onClick={() => window.location.reload()}
+          >
+            ⟳
+          </button>
         </div>
         <p className="text-4xl font-bold my-4">₹{walletDetails.totalAmount.toFixed(2)}</p>
         <p className="text-right text-gray-200">{walletDetails.walletNo}</p>
