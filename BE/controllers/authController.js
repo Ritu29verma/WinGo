@@ -238,9 +238,6 @@ export const getTransactionsByUserId = async (req, res) => {
 
     const transactions = await RechargeTransaction.find({ userId }).sort({ createdAt: -1 }); // Sorting by newest first
 
-    if (transactions.length === 0) {
-      return res.status(404).json({ message: "No transactions found for this user." });
-    }
 
     res.status(200).json({ transactions });
   } catch (error) {
@@ -259,9 +256,7 @@ export const getWithdrawalsByWalletNo = async (req, res) => {
       return res.status(400).json({ error: "walletNo is required" });
     }
     const withdrawals = await Withdraw.find({ walletNo }).sort({ createdAt: -1 });
-    if (withdrawals.length === 0) {
-      return res.status(404).json({ message: "No withdrawal records found for this wallet number." });
-    }
+    
     res.status(200).json({ withdrawals });
   } catch (error) {
     console.error("Error fetching withdrawals:", error);
