@@ -13,33 +13,6 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleBetResult = (data) => {
-      const { success, amount, period, result } = data;
-      const { number, color, size } = result;
-    
-      if (success) {
-        toast.success(
-          `🎉 You won! Amount: ₹${amount.toFixed(2)}\n` +
-          `🎲 Result: Number: ${number}, Color: ${color}, Size: ${size}\n` +
-          `📅 Period: ${period}`
-        );
-      } else {
-        toast.info(
-          `😞 You lost. Amount lost: ₹${Math.abs(amount).toFixed(2)}\n` +
-          `🎲 Result: Number: ${number}, Color: ${color}, Size: ${size}\n` +
-          `📅 Period: ${period}`
-        );
-      }
-    };
-
-    socket.on("betResult", handleBetResult);
-
-
-    return () => {
-      socket.off("betResult", handleBetResult);
-    };
-  }, [socket]);
 
 
   const handleBalanceClick = (value) => {
