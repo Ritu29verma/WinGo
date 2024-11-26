@@ -10,12 +10,13 @@ const AdminDashboard = ({ isSidebarOpen }) => {
   const [seconds, setSeconds] = useState("00");
   const [currentGameId, setCurrentGameId] = useState(null);
   const [manualNumber, setManualNumber] = useState("");
-
+  const [adminSelectedGameData, setAdminSelectedGameData] = useState(null);
 
 
   
   useEffect(() => {
-
+    
+    
     const fetchGameLogs = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`); // Replace with your backend URL
@@ -37,7 +38,9 @@ const AdminDashboard = ({ isSidebarOpen }) => {
       setSeconds(seconds);
       setTimerStatus(isTimerActive);
     });
-
+    socket.on("adminSelectedGameData", (data) => {
+      setAdminSelectedGameData(data);
+    });
     socket.on("gameId", ({ gameId }) => {
       setCurrentGameId(gameId);
       localStorage.setItem("nextGameId", gameId); // Save to localStorage
@@ -51,6 +54,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
       socket.off("gameData");
       socket.off("timerUpdate");
       socket.off("gameId");
+      socket.off("adminSelectedGameData");
     };
   }, []);
 
@@ -139,10 +143,20 @@ const AdminDashboard = ({ isSidebarOpen }) => {
             <p className="text-lg">Timer is currently inactive</p>
           )}
           {currentGameId && (
-            <div className="mt-4 text-lg">
-              <strong>Current Game ID:</strong> {currentGameId}
-            </div>
-          )}
+          <div className="mt-4 text-lg">
+            <strong>Current Game ID:</strong> {currentGameId}
+          </div>
+        )}
+        {adminSelectedGameData && (
+          <div className="mt-4 text-bold ">
+          <strong>Manually Set Game Data:</strong>
+          <div className="text-gold">
+            Number: {adminSelectedGameData.number}, 
+            Color: {adminSelectedGameData.color.join(", ")}, 
+            Big/Small: {adminSelectedGameData.bigOrSmall}
+          </div>
+        </div>
+        )}
         </div>
 
         {/* Manual Number Input */}

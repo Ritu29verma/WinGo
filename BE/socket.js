@@ -14,6 +14,14 @@ const stats = {
     size: { Big: 0, Small: 0 },
   },
 };
+const setManualGameData = (io, data) => {
+  adminSelectedGameData = {
+    number: data.number,
+    color: getColor(data.number),
+    bigOrSmall: getBigOrSmall(data.number),
+  };
+  io.emit("adminSelectedGameData", adminSelectedGameData); // Emit to all clients
+};
 
 let nextGameId = null;
 let timer = null;
@@ -75,6 +83,7 @@ const startRepeatingTimer = (io, durationMs) => {
       if (adminSelectedGameData) {
         gameData = { gameId: currentGameId, ...adminSelectedGameData };
         adminSelectedGameData = null;
+        io.emit("adminSelectedGameData", adminSelectedGameData);
       } else {
         gameData = fetchGameData();
       }
@@ -233,11 +242,12 @@ export const initializeSocket = (server) => {
     
 
     socket.on("setManualGameData", (data, callback) => {
-      const { number } = data;
-      const color = getColor(number);
-      const bigOrSmall = getBigOrSmall(number);
-      adminSelectedGameData = { number, color, bigOrSmall };
-      callback({ success: true, gameData: adminSelectedGameData });
+      if (data.number >= 0 && data.number <= 9) {
+        setManualGameData(io, data);
+        callback({ success: true, gameData: adminSelectedGameData });
+      } else {
+        callback({ success: false, message: "Invalid number." });
+      }
     });
 
     socket.on("disconnect", () => {
