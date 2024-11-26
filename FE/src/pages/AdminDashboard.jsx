@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import socket from "../socket";
-
+import UserStats from "./AdminUsers";
 const AdminDashboard = ({ isSidebarOpen }) => {
   const [remainingTime, setRemainingTime] = useState(null);
   const [gameData, setGameData] = useState([]);
@@ -179,7 +179,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
             Submit
           </button>
         </div>
-
+        <UserStats/>
         {/* Game Data Logs */}
         <div className="bg-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-bold mb-4">Game Logs</h2>

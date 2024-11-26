@@ -4,6 +4,16 @@ import Game from "./models/Game.js";
 import GameResult from "./models/GameResult.js"; 
 import User from "./models/User.js"
 import Wallet from "./models/Wallet.js"
+const stats = {
+  numbers: Array(10).fill(0), // Index represents the number (0-9)
+  colors: { RED: 0, GREEN: 0, VIOLET: 0 },
+  size: { Big: 0, Small: 0 },
+  totalAmount: {
+    numbers: Array(10).fill(0),
+    colors: { RED: 0, GREEN: 0, VIOLET: 0 },
+    size: { Big: 0, Small: 0 },
+  },
+};
 
 let nextGameId = null;
 let timer = null;
@@ -49,6 +59,12 @@ const startRepeatingTimer = (io, durationMs) => {
 
   timer = setInterval(async () => {
     if (timerDuration <= 0) {
+      Object.keys(stats.colors).forEach((key) => (stats.colors[key] = 0));
+      Object.keys(stats.size).forEach((key) => (stats.size[key] = 0));
+      stats.numbers.fill(0);
+      stats.totalAmount.numbers.fill(0);
+      Object.keys(stats.totalAmount.colors).forEach((key) => (stats.totalAmount.colors[key] = 0));
+      Object.keys(stats.totalAmount.size).forEach((key) => (stats.totalAmount.size[key] = 0));
       timerDuration = durationMs / 1000;
     
       currentGameId = nextGameId;
@@ -140,6 +156,8 @@ const startRepeatingTimer = (io, durationMs) => {
       seconds,
       isTimerActive,
     });
+
+    io.emit("bettingStats", stats);
   }, 1000);
 };
 
@@ -170,25 +188,47 @@ export const initializeSocket = (server) => {
 
     socket.on("userBet", async (data, callback) => {
       const { userId, content, purchaseAmount } = data;
-  
+    
       try {
-          if (!userId) {
-              throw new Error("User ID is missing");
-          }
-  
-          // Example: Fetch user details from the database (optional validation step)
-          const user = await User.findById(userId);
-          if (!user) {
-              throw new Error("User not found");
-          }
-  
-          // Store the bet details in the socket
-          socket.userBet = { userId, content, purchaseAmount };
-          callback({ success: true });
+        if (!userId) {
+          throw new Error("User ID is missing");
+        }
+    
+        // Fetch user details for validation (optional)
+        const user = await User.findById(userId);
+        if (!user) {
+          throw new Error("User not found");
+        }
+    
+        // Store bet details in the socket
+        socket.userBet = { userId, content, purchaseAmount };
+    
+        // Update statistics
+        if (!isNaN(content)) {
+          // Content is a number
+          const number = parseInt(content, 10);
+          stats.numbers[number]++;
+          stats.totalAmount.numbers[number] += purchaseAmount;
+        } else if (stats.colors[content.toUpperCase()] !== undefined) {
+          // Content is a color
+          const color = content.toUpperCase();
+          stats.colors[color]++;
+          stats.totalAmount.colors[color] += purchaseAmount;
+        } else if (stats.size[content.toLowerCase()] !== undefined) {
+          // Content is Big/Small
+          const size = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
+          stats.size[size]++;
+          stats.totalAmount.size[size] += purchaseAmount;
+        }
+    
+        // Emit updated statistics to admin
+        io.emit("bettingStats", stats);
+    
+        callback({ success: true });
       } catch (error) {
-          callback({ success: false, message: error.message });
+        callback({ success: false, message: error.message });
       }
-  });
+    });
   
     
 

@@ -40,7 +40,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         </li>
         <li>
           <Link
-            to="#"
+            to="/admin/userstats"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
             Users

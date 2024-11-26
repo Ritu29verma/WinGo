@@ -19,6 +19,7 @@ import PendingWithdrawalsTable from './pages/PendingWithdrawl';
 import NonPendingWithdrawalsTable from './pages/ApprovedWithdrawal';
 import DepositHistory from './pages/DepositHistory';
 import WithdrawalHistory from "./pages/WithdrawalHistory"
+import UserStats from './pages/AdminUsers';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
 
@@ -65,6 +66,8 @@ function App() {
               <PendingWithdrawalsTable/>
             </ProtectedRoute>
           }/>
+
+
 
           <Route path="/admin/approvedwithdrawl" element={
             <ProtectedRoute>
