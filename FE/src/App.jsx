@@ -24,9 +24,21 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
 
   useEffect(() => {
-    // Update authentication status on component mount
-    setIsAuthenticated(localStorage.getItem('token') ? true : false);
-  }, []);
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token); // Set to true if token exists, false otherwise
+
+    // Optional: Add event listener for storage events (useful in multi-tab scenarios)
+    const handleStorageChange = () => {
+      const token = localStorage.getItem('token');
+      setIsAuthenticated(!!token);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []); 
 
   return (
     <>
