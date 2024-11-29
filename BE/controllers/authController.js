@@ -30,20 +30,17 @@ export const registerUser = async (req, res) => {
       inviteCode,
     });
 
-    // Generate a unique wallet number using year, month, day, and seconds
     const now = new Date();
-    const year = now.getFullYear().toString().slice(-2); // Last 2 digits of the year
-    const month = (now.getMonth() + 1).toString().padStart(2, "0"); // Month as 2 digits
-    const day = now.getDate().toString().padStart(2, "0"); // Day as 2 digits
-    const seconds = Math.floor(now.getTime() / 1000).toString().slice(-4); // Last 4 digits of the timestamp in seconds
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, "0"); 
+    const day = now.getDate().toString().padStart(2, "0"); 
+    const seconds = Math.floor(now.getTime() / 1000).toString().slice(-4); 
 
-    const walletNo = `${year}${month}${day}${seconds}`; // Combine to create a unique wallet number
+    const walletNo = `${year}${month}${day}${seconds}`; 
 
-    // Fetch the minimum wallet amount
     const minAmountDoc = await MinAmount.findOne();
-    const minAmount = minAmountDoc ? minAmountDoc.value : 100; // Default to 100 if not set
+    const minAmount = minAmountDoc ? minAmountDoc.value : 100;
 
-    // Create a wallet for the user
     const wallet = await Wallet.create({
       walletNo,
       userId: user._id,
@@ -264,6 +261,27 @@ export const getWithdrawalsByWalletNo = async (req, res) => {
   }
 };
 
+
+export const checkUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ isAuthenticated: false, message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId); // Ensure `userId` matches the JWT payload
+    if (!user) {
+      return res.status(403).json({ isAuthenticated: false, message: "Not authorized" });
+    }
+
+    res.status(200).json({ isAuthenticated: true, message: "User is authenticated" });
+  } catch (error) {
+    console.error("Error during user check:", error);
+    res.status(403).json({ isAuthenticated: false, message: "Invalid or expired token" });
+  }
+};
 
 
 

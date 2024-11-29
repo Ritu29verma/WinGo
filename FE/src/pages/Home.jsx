@@ -10,7 +10,7 @@ import Footer from '../components/Footer';
 function App() {
   return (
     <div className="bg-gray-900 min-h-screen text-white">  
-     <Header isLogin={true} isLogout={true} isRegister={true} isWingo={true}/>
+     <Header isLogin={true} isLogout={false} isRegister={true} isWingo={true}/>
     <Slider/>
 
       {/* Tabs Section */}

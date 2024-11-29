@@ -131,6 +131,7 @@ const GameSection = () => {
         onClose={closePopup}
         content={popup.content}
         color={popup.color}
+        className="z-10"
       />
 
       {/* <WinOrLoss

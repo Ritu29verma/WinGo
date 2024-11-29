@@ -31,11 +31,11 @@ const WinGo = () => {
         lotteryResult: { number, color, size },
         bonus: amount,
         period: period,
-        autoClose: true, // Enable auto-close by default
+        autoClose: true,
       });
 
       if (success) {
-        setTimeout(() => setPopupData((prev) => ({ ...prev, isWin: null })), 3000);
+        setTimeout(() => setPopupData((prev) => ({ ...prev, isWin: null })), 5000);
       }
     };
 
@@ -49,7 +49,7 @@ const WinGo = () => {
   return (
     <div className="bg-black min-h-screen min-w-full">
       {/* Header */}
-      <Header isLogout={false} isWingo={false} />
+      <Header isLogout={true} isWingo={false} />
 
       {/* Top Section */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 min-w-full rounded-br-full rounded-bl-full mb-2 flex flex-col items-center">

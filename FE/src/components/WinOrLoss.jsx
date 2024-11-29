@@ -8,7 +8,7 @@ const WinOrLoss = ({ isWin, lotteryResult, bonus, period, autoClose }) => {
       const timer = setTimeout(() => {
         window.location.reload();
       }, 5000);
-      return () => clearTimeout(timer); // Cleanup timer on component unmount
+      return () => clearTimeout(timer);
     }
   }, [isWin, autoClose]);
 

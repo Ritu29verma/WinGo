@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { FaBars } from "react-icons/fa"; // Menu icon
+import { FaBars } from "react-icons/fa"; 
 import AdminSidebar from "./AdminSidebar";
+import { useNavigate } from 'react-router-dom';
 
-const AdminNavbar = ({ children }) => {
+const AdminNavbar = ({ children, logout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -11,6 +13,12 @@ const AdminNavbar = ({ children }) => {
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("isAdmin");
+    navigate("/admin/login");
   };
 
   return (
@@ -42,7 +50,11 @@ const AdminNavbar = ({ children }) => {
             <FaBars />
           </button>
           <h1 className="text-lg font-bold">Dashboard V5</h1>
+        
           <div className="flex items-center space-x-4">
+          <button onClick={handleLogout} className="bg-orange-500 text-white hover:bg-white hover:text-orange-500 transform transition-transform hover:scale-95 font-bold px-4 py-1 rounded">
+            Logout
+          </button>
             <img
               src="https://via.placeholder.com/30"
               alt="Profile"

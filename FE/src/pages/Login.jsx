@@ -56,6 +56,7 @@ function LoginPage() {
           navigate("/");
         }, 1500); 
       }
+      console.log(localStorage.getItem("token"))
     } catch (error) {
       // Log the full error object for debugging
       console.error("Error during login:", error);

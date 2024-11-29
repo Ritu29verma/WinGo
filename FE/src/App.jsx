@@ -20,6 +20,7 @@ import NonPendingWithdrawalsTable from './pages/ApprovedWithdrawal';
 import DepositHistory from './pages/DepositHistory';
 import WithdrawalHistory from "./pages/WithdrawalHistory"
 import UserStats from './pages/AdminUsers';
+import PrivateRouteUser from "./components/ProtectedRouteUser"; 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
 
@@ -45,13 +46,11 @@ function App() {
       <ToastContainer />
       <BrowserRouter>
         <Routes>
-          <Route path="/register" element={<Register />} />
           <Route
             path="/admin/dashboard"
             element={
               <ProtectedRoute>
                 <AdminDashboard />
-
               </ProtectedRoute>
             }
           />
@@ -87,15 +86,52 @@ function App() {
             </ProtectedRoute>
           }/>
           <Route path="/login" element={<Login />} />
-          <Route path="/withdrawal-history" element={<WithdrawalHistory />} />
-          <Route path="/deposit-history" element={<DepositHistory/>} />
+          <Route path="/register" element={<Register />} />
+
           <Route path="/admin/register" element={<AdminSignup />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/" element={<Home />} />
-          {/* Protected Route */}
-          <Route path="/wingo" element={isAuthenticated ? <WinGo /> : <Navigate to="/login" />} />
-          <Route path="/wingo/deposit" element={isAuthenticated ? <DepositPage /> : <Navigate to="/login" />} />
-          <Route path="/wingo/withdraw" element={isAuthenticated ? <Withdraw /> : <Navigate to="/login" />} />
+          {/* <Route path="/" element={<Home />} /> */}
+          {/* User Private Routes */}
+          <Route
+            path="/"
+            element={
+              <PrivateRouteUser>
+                <WinGo />
+              </PrivateRouteUser>
+            }
+          />
+          <Route
+            path="/wingo/deposit"
+            element={
+              <PrivateRouteUser>
+                <DepositPage />
+              </PrivateRouteUser>
+            }
+          />
+          <Route
+            path="/wingo/withdraw"
+            element={
+              <PrivateRouteUser>
+                <Withdraw />
+              </PrivateRouteUser>
+            }
+          />
+          <Route
+            path="/withdrawal-history"
+            element={
+              <PrivateRouteUser>
+                <WithdrawalHistory />
+              </PrivateRouteUser>
+            }
+          />
+          <Route
+            path="/deposit-history"
+            element={
+              <PrivateRouteUser>
+                <DepositHistory />
+              </PrivateRouteUser>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </>

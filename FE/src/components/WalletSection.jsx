@@ -83,7 +83,12 @@ const WalletSection = ({ token }) => {
             <p className="text-lg font-semibold text-white">Wallet Balance</p>
             <p className="text-xl font-bold flex justify-center text-white">
               ₹{walletDetails.totalAmount.toFixed(2)}
-              
+              <button 
+            className="text-lg mx-2" 
+            onClick={() => window.location.reload()}
+          >
+            ⟳
+          </button>
             </p>
             <p className="text-md font-bold flex justify-center text-white">
               {walletDetails.walletNo}
