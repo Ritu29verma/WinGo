@@ -18,6 +18,7 @@ const AdminNavbar = ({ children, logout }) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
+    localStorage.removeItem("admin_id");
     navigate("/admin/login");
   };
 

@@ -38,7 +38,7 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
       if (response.success) {
         toast.success("Bet placed successfully");
       } else {
-        toast.error("Failed to place bet:", response.message);
+        toast.error("Failed to place bet", response.message);
       }
     });
 

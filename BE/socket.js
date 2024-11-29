@@ -196,38 +196,27 @@ export const initializeSocket = (server) => {
 
     socket.on("userBet", async (data, callback) => {
       const { userId, content, purchaseAmount } = data;
-    
       try {
         if (!userId) {
           throw new Error("User ID is missing");
         }
-    
-        // Fetch user and wallet details
         const user = await User.findById(userId);
         if (!user) {
           throw new Error("User not found");
         }
-    
         const wallet = await Wallet.findOne({ userId });
         if (!wallet || wallet.totalAmount < purchaseAmount) {
           throw new Error("Insufficient balance");
         }
-    
-        // Deduct the purchase amount from the wallet immediately
         wallet.totalAmount -= purchaseAmount;
         await wallet.save();
-    
-        // Store bet details in the socket for processing after game ends
         socket.userBet = { userId, content, purchaseAmount };
         socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount } });
-        // Update statistics
         if (!isNaN(content)) {
-          // Content is a number
           const number = parseInt(content, 10);
           stats.numbers[number]++;
           stats.totalAmount.numbers[number] += purchaseAmount;
         } else if (stats.colors[content.toUpperCase()] !== undefined) {
-          // Content is a color
           const color = content.toUpperCase();
           stats.colors[color]++;
           stats.totalAmount.colors[color] += purchaseAmount;

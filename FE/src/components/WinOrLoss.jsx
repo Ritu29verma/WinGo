@@ -37,18 +37,18 @@ const WinOrLoss = ({
       >
         {/* Header */}
         <div className="text-center mt-36">
-          <h2 className="text-2xl font-bold">
-            {isWin ? "Congratulations!" : "Better Luck Next Time!"}
-          </h2>
+        <h2 className={`text-2xl font-bold ${isWin ? "text-white" : "text-gray-700"}`}>
+        {isWin ? "Congratulations!" : "Better Luck Next Time!"}
+      </h2>
         </div>
 
         {/* Lottery Result Section */}
-        <div className="text-center text-white">
-          <p className="text-lg">Lottery Result:</p>
+        <div className="text-center">
+        <p className={`text-lg ${isWin ? "text-white" : "text-gray-800"}`}>Lottery Result:</p>
           <div className="flex justify-center gap-2 text-lg font-bold">
-            <span className="text-black">{lotteryResult.color}</span>
-            <span className="text-black">{lotteryResult.number}</span>
-            <span className="text-black">{lotteryResult.size}</span>
+            <span className="text-gray-700">{lotteryResult.color}</span>
+            <span className="text-gray-700">{lotteryResult.number}</span>
+            <span className="text-gray-700">{lotteryResult.size}</span>
           </div>
         </div>
 
