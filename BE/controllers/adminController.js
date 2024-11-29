@@ -388,3 +388,34 @@ export const getNonPendingTransactions = async (req, res) => {
     });
   }
 };
+
+
+
+export const getAllUsers = async (req, res) => {
+  try {
+    // Fetch all users and their wallet details
+    const users = await User.find();
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    // Fetch wallet details for each user
+    const userWallets = await Promise.all(
+      users.map(async (user) => {
+        const wallet = await Wallet.findOne({ userId: user._id });
+        return {
+          userId: user._id, // Include user ID in the response
+          phoneNo: user.phoneNo,
+          walletNo: wallet ? wallet.walletNo : "Wallet not found",
+          countryCode: user.countryCode,
+          totalAmount: wallet ? wallet.totalAmount : 0,
+        };
+      })
+    );
+
+    res.status(200).json(userWallets);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

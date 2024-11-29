@@ -15,13 +15,19 @@ const WinGo = () => {
     bonus: null,
     period: null,
     autoClose: true,
+    isVisible: false, // Track visibility
   });
+
+  const handleClosePopup = () => {
+    setPopupData((prev) => ({ ...prev, isVisible: false }));
+  };
 
   useEffect(() => {
     if (!socket) {
       console.error("Socket is not defined");
       return;
     }
+
     const handleBetResult = (data) => {
       const { success, amount, period, result } = data;
       const { number, color, size } = result;
@@ -32,11 +38,8 @@ const WinGo = () => {
         bonus: amount,
         period: period,
         autoClose: true,
+        isVisible: true, // Show the popup
       });
-
-      if (success) {
-        setTimeout(() => setPopupData((prev) => ({ ...prev, isWin: null })), 5000);
-      }
     };
 
     socket.on("betResult", handleBetResult);
@@ -48,32 +51,26 @@ const WinGo = () => {
 
   return (
     <div className="bg-black min-h-screen min-w-full">
-      {/* Header */}
       <Header isLogout={true} isWingo={false} />
-
-      {/* Top Section */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 min-w-full rounded-br-full rounded-bl-full mb-2 flex flex-col items-center">
         <WalletSection />
         <DetailsSection />
         <TimerSection />
       </div>
-
-      {/* Main Game Section */}
       <GameSection />
-
-      {/* Game History */}
       <GameHistory />
-
-      {/* Win or Loss Popup */}
       <WinOrLoss
         isWin={popupData.isWin}
         lotteryResult={popupData.lotteryResult}
         bonus={popupData.bonus}
         period={popupData.period}
         autoClose={popupData.autoClose}
+        isVisible={popupData.isVisible} // Pass visibility state
+        onClose={handleClosePopup} // Pass close handler
       />
     </div>
   );
 };
+
 
 export default WinGo;

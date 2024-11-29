@@ -58,6 +58,22 @@ const WalletSection = ({ token }) => {
     };
   }, [socket]);
 
+  useEffect(() => {
+    const handleWalletUpdate = (data) => {
+      console.log("Wallet updated:", data);
+      if (data.walletDetails) {
+        setWalletDetails(data.walletDetails);
+      }
+    };
+  
+    // Listen for wallet updates after placing a bet
+    socket.on("walletUpdate", handleWalletUpdate);
+  
+    return () => {
+      socket.off("walletUpdate", handleWalletUpdate); // Cleanup on unmount
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="bg-customBlue w-full max-w-7xl rounded-lg p-6 mb-4 shadow-lg m-3">

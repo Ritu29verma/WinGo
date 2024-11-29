@@ -30,6 +30,15 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             Dashboard
           </Link>
         </li>
+
+        <li>
+          <Link
+            to="/admin/users"
+            className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
+          >
+            Users
+          </Link>
+        </li>
         
         <li>
           <Link

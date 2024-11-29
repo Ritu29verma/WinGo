@@ -5,7 +5,7 @@ import GameResult from "./models/GameResult.js";
 import User from "./models/User.js"
 import Wallet from "./models/Wallet.js"
 const stats = {
-  numbers: Array(10).fill(0), // Index represents the number (0-9)
+  numbers: Array(10).fill(0),
   colors: { RED: 0, GREEN: 0, VIOLET: 0 },
   size: { Big: 0, Small: 0 },
   totalAmount: {
@@ -20,7 +20,7 @@ const setManualGameData = (io, data) => {
     color: getColor(data.number),
     bigOrSmall: getBigOrSmall(data.number),
   };
-  io.emit("adminSelectedGameData", adminSelectedGameData); // Emit to all clients
+  io.emit("adminSelectedGameData", adminSelectedGameData);
 };
 
 let nextGameId = null;
@@ -108,49 +108,48 @@ const startRepeatingTimer = (io, durationMs) => {
             gameData.color.includes(content.toUpperCase()) ||
             content.toLowerCase() === gameData.bigOrSmall.toLowerCase();
     
-          const taxRate = 0.02;
-          const tax = purchaseAmount * taxRate;
-          const amountAfterTax = purchaseAmount - tax;
+            const taxRate = 0.02;
+            const tax = purchaseAmount * taxRate;
+            const winAmount = 2 * purchaseAmount - tax;
+            const lossAmount = purchaseAmount - tax;
+            
+            const result = gameData.number;
+            const winLossDisplay = isWin ? winAmount : -lossAmount;
+            
     
-          const result = gameData.number;
-          const winLoss = isWin
-            ? 2 * purchaseAmount - purchaseAmount * taxRate
-            : -amountAfterTax;
-    
-          // Save the result to the database
-          const gameResult = new GameResult({
-            userid: userId,
-            periodNumber: currentGameId,
-            purchaseAmount,
-            amountAfterTax,
-            tax,
-            result,
-            select: content,
-            status: isWin ? "succeed" : "fail",
-            winLoss,
-          });
-          await gameResult.save();
+          
+            const gameResult = new GameResult({
+              userid: userId,
+              periodNumber: currentGameId,
+              purchaseAmount,
+              amountAfterTax: winAmount,
+              tax,
+              result,
+              select: content,
+              status: isWin ? "succeed" : "fail",
+              winLoss: winLossDisplay,
+            });
+            await gameResult.save();
           
           const wallet = await Wallet.findOne({ userId });
           if (wallet) {
             if (isWin) {
-              wallet.totalAmount += winLoss;
-            } else {
-              wallet.totalAmount -= purchaseAmount;
+              wallet.totalAmount += winAmount;
+              wallet.updatedAt = Date.now();
+              await wallet.save();
             }
-            wallet.updatedAt = Date.now(); // Update the timestamp
-            await wallet.save(); // Save the updated wallet
           }
-          // Emit the result to the user
           io.to(socketId).emit("betResult", {
             success: isWin,
-            amount: isWin ? winLoss : -amountAfterTax,
+            amount: winLossDisplay,
             period: currentGameId,
-            result: {number:gameData.number,color:gameData.color,size:gameData.bigOrSmall}
-
+            result: {
+              number: gameData.number,
+              color: gameData.color,
+              size: gameData.bigOrSmall,
+            },
           });
-    
-          // Clear user bet
+           
           delete socket.userBet;
         }
       }
@@ -203,15 +202,24 @@ export const initializeSocket = (server) => {
           throw new Error("User ID is missing");
         }
     
-        // Fetch user details for validation (optional)
+        // Fetch user and wallet details
         const user = await User.findById(userId);
         if (!user) {
           throw new Error("User not found");
         }
     
-        // Store bet details in the socket
-        socket.userBet = { userId, content, purchaseAmount };
+        const wallet = await Wallet.findOne({ userId });
+        if (!wallet || wallet.totalAmount < purchaseAmount) {
+          throw new Error("Insufficient balance");
+        }
     
+        // Deduct the purchase amount from the wallet immediately
+        wallet.totalAmount -= purchaseAmount;
+        await wallet.save();
+    
+        // Store bet details in the socket for processing after game ends
+        socket.userBet = { userId, content, purchaseAmount };
+        socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount } });
         // Update statistics
         if (!isNaN(content)) {
           // Content is a number
@@ -223,16 +231,13 @@ export const initializeSocket = (server) => {
           const color = content.toUpperCase();
           stats.colors[color]++;
           stats.totalAmount.colors[color] += purchaseAmount;
-        } else if (stats.size[content.toLowerCase()] !== undefined) {
-          // Content is Big/Small
+        } else if (stats.size[content] !== undefined) {
           const size = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
           stats.size[size]++;
           stats.totalAmount.size[size] += purchaseAmount;
         }
     
-        // Emit updated statistics to admin
         io.emit("bettingStats", stats);
-    
         callback({ success: true });
       } catch (error) {
         callback({ success: false, message: error.message });

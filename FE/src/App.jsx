@@ -21,6 +21,8 @@ import DepositHistory from './pages/DepositHistory';
 import WithdrawalHistory from "./pages/WithdrawalHistory"
 import UserStats from './pages/AdminUsers';
 import PrivateRouteUser from "./components/ProtectedRouteUser"; 
+import UsersTable from './components/AllUsers';
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
 
@@ -77,7 +79,11 @@ function App() {
               <PendingWithdrawalsTable/>
             </ProtectedRoute>
           }/>
-
+          <Route path="/admin/users" element={
+                    <ProtectedRoute>
+                      <UsersTable/>
+                    </ProtectedRoute>
+                  }/>
 
 
           <Route path="/admin/approvedwithdrawl" element={
