@@ -91,7 +91,7 @@ const GameHistory = () => {
           <button
             key={tab}
             onClick={() => handleTabClick(tab)}
-            className={`px-4 py-2 rounded-lg font-bold ${
+            className={`px-4 py-2 rounded-lg font-bold text-sm md:text-base ${
               activeTab === tab ? "bg-green-500" : "bg-customBlue hover:bg-gradient-to-l from-blue-500 to-blue-900"
             }`}
           >

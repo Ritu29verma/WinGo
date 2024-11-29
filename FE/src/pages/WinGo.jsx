@@ -15,11 +15,14 @@ const WinGo = () => {
     bonus: null,
     period: null,
     autoClose: true,
-    isVisible: false, // Track visibility
+    isVisible: false,
   });
+
+  const [betResults, setBetResults] = useState([]); // Store all incoming bet results
 
   const handleClosePopup = () => {
     setPopupData((prev) => ({ ...prev, isVisible: false }));
+    setBetResults([]);
   };
 
   useEffect(() => {
@@ -29,17 +32,7 @@ const WinGo = () => {
     }
 
     const handleBetResult = (data) => {
-      const { success, amount, period, result } = data;
-      const { number, color, size } = result;
-
-      setPopupData({
-        isWin: success,
-        lotteryResult: { number, color, size },
-        bonus: amount,
-        period: period,
-        autoClose: true,
-        isVisible: true, // Show the popup
-      });
+      setBetResults((prevResults) => [...prevResults, data]); // Store all incoming results
     };
 
     socket.on("betResult", handleBetResult);
@@ -47,7 +40,26 @@ const WinGo = () => {
     return () => {
       socket.off("betResult", handleBetResult);
     };
-  }, [socket]);
+  }, []);
+
+  useEffect(() => {
+    if (betResults.length > 0 && !popupData.isVisible) {
+      // Find a winning bet first
+      const winningBet = betResults.find((result) => result.success);
+
+      const resultToShow = winningBet || betResults[0]; // Show a win if available, else any loss
+      const { success, amount, period, result } = resultToShow;
+
+      setPopupData({
+        isWin: success,
+        lotteryResult: result,
+        bonus: amount,
+        period,
+        autoClose: true,
+        isVisible: true, // Only show one popup
+      });
+    }
+  }, [betResults, popupData.isVisible]);
 
   return (
     <div className="bg-black min-h-screen min-w-full">
@@ -65,12 +77,11 @@ const WinGo = () => {
         bonus={popupData.bonus}
         period={popupData.period}
         autoClose={popupData.autoClose}
-        isVisible={popupData.isVisible} // Pass visibility state
-        onClose={handleClosePopup} // Pass close handler
+        isVisible={popupData.isVisible}
+        onClose={handleClosePopup}
       />
     </div>
   );
 };
-
 
 export default WinGo;

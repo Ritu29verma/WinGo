@@ -98,31 +98,31 @@ const startRepeatingTimer = (io, durationMs) => {
     
       // Check user bets
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
-        const userBet = socket.userBet;
-        if (userBet) {
-          const { userId, content, purchaseAmount } = userBet;
-    
-          // Match user's bet with game data
-          const isWin =
-            content == gameData.number ||
-            gameData.color.includes(content.toUpperCase()) ||
-            content.toLowerCase() === gameData.bigOrSmall.toLowerCase();
-    
+        const userBets = socket.userBets;
+        if (userBets && userBets.length > 0) {
+          for (const bet of userBets) {
+            const { userId, content, purchaseAmount } = bet;
+      
+            // Match user's bet with game data
+            const isWin =
+              content == gameData.number ||
+              gameData.color.includes(content.toUpperCase()) ||
+              content.toLowerCase() === gameData.bigOrSmall.toLowerCase();
+      
             const taxRate = 0.02;
             const tax = purchaseAmount * taxRate;
             const winAmount = 2 * purchaseAmount - tax;
             const lossAmount = purchaseAmount - tax;
-            
+      
             const result = gameData.number;
             const winLossDisplay = isWin ? winAmount : -lossAmount;
-            
-    
-          
+      
+            // Save game result
             const gameResult = new GameResult({
               userid: userId,
               periodNumber: currentGameId,
               purchaseAmount,
-              amountAfterTax: winAmount,
+              amountAfterTax: isWin ? winAmount : 0,
               tax,
               result,
               select: content,
@@ -130,27 +130,29 @@ const startRepeatingTimer = (io, durationMs) => {
               winLoss: winLossDisplay,
             });
             await gameResult.save();
-          
-          const wallet = await Wallet.findOne({ userId });
-          if (wallet) {
-            if (isWin) {
-              wallet.totalAmount += winAmount;
+      
+            // Update wallet
+            const wallet = await Wallet.findOne({ userId });
+            if (wallet) {
+              if (isWin) {
+                wallet.totalAmount += winAmount;
+              }
               wallet.updatedAt = Date.now();
               await wallet.save();
             }
+      
+            io.to(socketId).emit("betResult", {
+              success: isWin,
+              amount: winLossDisplay,
+              period: currentGameId,
+              result: {
+                number: gameData.number,
+                color: gameData.color,
+                size: gameData.bigOrSmall,
+              },
+            });
           }
-          io.to(socketId).emit("betResult", {
-            success: isWin,
-            amount: winLossDisplay,
-            period: currentGameId,
-            result: {
-              number: gameData.number,
-              color: gameData.color,
-              size: gameData.bigOrSmall,
-            },
-          });
-           
-          delete socket.userBet;
+          delete socket.userBets;
         }
       }
     }
@@ -210,7 +212,13 @@ export const initializeSocket = (server) => {
         }
         wallet.totalAmount -= purchaseAmount;
         await wallet.save();
-        socket.userBet = { userId, content, purchaseAmount };
+        if (!socket.userBets) {
+          socket.userBets = [];
+        }
+    
+        // Add the new bet to the user's bets
+        socket.userBets.push({ userId, content, purchaseAmount });
+        
         socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount } });
         if (!isNaN(content)) {
           const number = parseInt(content, 10);
