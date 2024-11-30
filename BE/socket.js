@@ -13,6 +13,8 @@ const stats = {
     colors: { RED: 0, GREEN: 0, VIOLET: 0 },
     size: { Big: 0, Small: 0 },
   },
+  totalGameAmount: 0,
+  uniqueUsers: new Set(),
 };
 const setManualGameData = (io, data) => {
   adminSelectedGameData = {
@@ -73,6 +75,8 @@ const startRepeatingTimer = (io, durationMs) => {
       stats.totalAmount.numbers.fill(0);
       Object.keys(stats.totalAmount.colors).forEach((key) => (stats.totalAmount.colors[key] = 0));
       Object.keys(stats.totalAmount.size).forEach((key) => (stats.totalAmount.size[key] = 0));
+      stats.totalGameAmount = 0;
+      stats.uniqueUsers.clear();
       timerDuration = durationMs / 1000;
     
       currentGameId = nextGameId;
@@ -95,7 +99,7 @@ const startRepeatingTimer = (io, durationMs) => {
       await gameDocument.save();
     
       io.emit("gameData", gameData);
-    
+ 
       // Check user bets
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
         const userBets = socket.userBets;
@@ -152,7 +156,8 @@ const startRepeatingTimer = (io, durationMs) => {
               },
             });
           }
-          delete socket.userBets;
+          socket.userBets = []; // Reset userBets to an empty array
+          socket.emit("userBetsUpdate", socket.userBets); 
         }
       }
     }
@@ -167,7 +172,10 @@ const startRepeatingTimer = (io, durationMs) => {
       isTimerActive,
     });
 
-    io.emit("bettingStats", stats);
+    io.emit("bettingStats", {
+      ...stats,
+      uniqueUsersCount: stats.uniqueUsers.size, // Send count of unique users
+    });
   }, 1000);
 };
 
@@ -216,8 +224,10 @@ export const initializeSocket = (server) => {
           socket.userBets = [];
         }
     
-        // Add the new bet to the user's bets
-        socket.userBets.push({ userId, content, purchaseAmount });
+        const newBet = { userId, content, purchaseAmount, timestamp: new Date() };
+        socket.userBets.push(newBet);
+        stats.uniqueUsers.add(userId);
+        socket.emit("userBetsUpdate", socket.userBets);
         
         socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount } });
         if (!isNaN(content)) {
@@ -233,8 +243,11 @@ export const initializeSocket = (server) => {
           stats.size[size]++;
           stats.totalAmount.size[size] += purchaseAmount;
         }
-    
-        io.emit("bettingStats", stats);
+        stats.totalGameAmount += purchaseAmount;
+        io.emit("bettingStats", {
+          ...stats,
+          uniqueUsersCount: stats.uniqueUsers.size, // Send count of unique users
+        });
         callback({ success: true });
       } catch (error) {
         callback({ success: false, message: error.message });

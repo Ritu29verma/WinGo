@@ -57,7 +57,7 @@ const AdminNavbar = ({ children, logout }) => {
             Logout
           </button>
             <img
-              src="https://via.placeholder.com/30"
+              src="https://www.shutterstock.com/image-vector/user-account-avatar-icon-pictogram-600nw-1860375778.jpg"
               alt="Profile"
               className="w-8 h-8 rounded-full"
             />

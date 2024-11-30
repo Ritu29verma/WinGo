@@ -19,7 +19,6 @@ import PendingWithdrawalsTable from './pages/PendingWithdrawl';
 import NonPendingWithdrawalsTable from './pages/ApprovedWithdrawal';
 import DepositHistory from './pages/DepositHistory';
 import WithdrawalHistory from "./pages/WithdrawalHistory"
-import UserStats from './pages/AdminUsers';
 import PrivateRouteUser from "./components/ProtectedRouteUser"; 
 import UsersTable from './components/AllUsers';
 

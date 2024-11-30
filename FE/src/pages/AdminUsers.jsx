@@ -11,7 +11,10 @@ const UserStats = () => {
       colors: { RED: 0, GREEN: 0, VIOLET: 0 },
       size: { Big: 0, Small: 0 },
     },
+    totalGameAmount: 0, // Initialize total game amount
+    uniqueUsersCount: 0, // Initialize unique users count
   });
+
 
   useEffect(() => {
     socket.on("bettingStats", (updatedStats) => {
@@ -26,7 +29,18 @@ const UserStats = () => {
   return (
     <div className="bg-gray-700 text-white min-h-screen p-6 space-y-6">
       <h1 className="text-center text-2xl font-bold">User Statistics</h1>
-
+      {/* Total Game Amount */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      <div className="p-4 rounded-lg shadow-lg text-center bg-indigo-600">
+        <h2 className="text-xl font-semibold">Total Game Amount</h2>
+        <p className="text-gold text-2xl font-bold">{stats.totalGameAmount}/-</p>
+      </div>
+        {/* Unique Users Playing */}
+        <div className="p-4 rounded-lg shadow-lg text-center bg-teal-600">
+        <h2 className="text-xl font-semibold">Users Playing Currently</h2>
+        <p className="text-white text-2xl font-bold">{stats.uniqueUsersCount} Users</p>
+      </div>
+      </div>
       {/* Color Stats */}
       <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6">
         {Object.entries(stats.colors).map(([color, count]) => (

@@ -5,10 +5,24 @@ import axios from "axios";
 const GameHistory = () => {
   const [gameResults, setGameResults] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [myBets, setMyBets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("game");
   const [gameData, setGameData] = useState([]);
+
+
+  useEffect(() => {
+    const handleUserBetsUpdate = (userBets) => {
+      setMyBets(userBets || []); // Fallback to empty array if null or undefined
+    };
+  
+    socket.on("userBetsUpdate", handleUserBetsUpdate);
+  
+    return () => {
+      socket.off("userBetsUpdate", handleUserBetsUpdate);
+    };
+  }, []);
 
   const fetchGameResults = async () => {
     const token = localStorage.getItem("token");
@@ -87,7 +101,7 @@ const GameHistory = () => {
     <div className="bg-black text-white w-full max-w-7xl mx-auto rounded-lg p-4 mt-4">
       {/* Tabs */}
       <div className="flex space-x-2 justify-around mb-4">
-        {["Game History", "Chart", "My History"].map((tab) => (
+        {["Game History", "My Bets", "My History"].map((tab) => (
           <button
             key={tab}
             onClick={() => handleTabClick(tab)}
@@ -139,7 +153,33 @@ const GameHistory = () => {
             </div>
           </div>
         )}
-        {activeTab === "Chart" && <p>Chart content...</p>}
+        {activeTab === "My Bets" && (
+          <div className="bg-gray-800 rounded-lg p-4 mx-auto">
+            <h2 className="text-lg font-bold mb-4">My Bets</h2>
+            {myBets.length === 0 ? (
+              <p>No Bets yet...</p>
+            ) : (
+              <ul className="space-y-3">
+                {myBets.map((bet, index) => (
+                  <li key={index} className="bg-customBlue p-3 rounded-lg">
+                    <div className="flex justify-between mb-1">
+                    <p className="text-gray-400">Selected:</p>
+                    <p className="text-white">{bet.content}</p>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                    <p className="text-gray-400">Purchase Amount:</p>
+                    <p className="text-white">₹{bet.purchaseAmount}</p>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                    <p className="text-gray-400">Timestamp:</p>
+                    <p className="text-white">{new Date(bet.timestamp).toLocaleString()}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         {activeTab === "My History" && (
           <div className="bg-gray-800 rounded-lg p-4 mx-auto">
             <h1 className="text-lg font-bold mb-4">My Game History</h1>
