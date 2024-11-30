@@ -10,56 +10,42 @@ import socket from "../socket";
 
 const WinGo = () => {
   const [popupData, setPopupData] = useState({
-    isWin: null,
-    lotteryResult: {},
+    isWin: false,
+    lotteryResult: null,
     bonus: null,
     period: null,
     autoClose: true,
     isVisible: false,
   });
 
-  const [betResults, setBetResults] = useState([]); // Store all incoming bet results
-
-  const handleClosePopup = () => {
-    setPopupData((prev) => ({ ...prev, isVisible: false }));
-    setBetResults([]);
-  };
-
   useEffect(() => {
-    if (!socket) {
-      console.error("Socket is not defined");
-      return;
-    }
+    // Listen for betResults from the server
+    socket.on("betResults", (betResults) => {
+      if (betResults && betResults.length > 0) {
+        // Find the first winning result
+        const winningResult = betResults.find((result) => result.success);
+        const resultToShow = winningResult || betResults[betResults.length - 1];
 
-    const handleBetResult = (data) => {
-      setBetResults((prevResults) => [...prevResults, data]); // Store all incoming results
-    };
-
-    socket.on("betResult", handleBetResult);
+        // Update popupData state with the result to show
+        setPopupData({
+          isWin: resultToShow.success,
+          lotteryResult: resultToShow.result,
+          bonus: resultToShow.amount,
+          period: resultToShow.period,
+          autoClose: true,
+          isVisible: true,
+        });
+      }
+    });
 
     return () => {
-      socket.off("betResult", handleBetResult);
+      socket.off("betResults");
     };
   }, []);
 
-  useEffect(() => {
-    if (betResults.length > 0 && !popupData.isVisible) {
-      // Find a winning bet first
-      const winningBet = betResults.find((result) => result.success);
-
-      const resultToShow = winningBet || betResults[0]; // Show a win if available, else any loss
-      const { success, amount, period, result } = resultToShow;
-
-      setPopupData({
-        isWin: success,
-        lotteryResult: result,
-        bonus: amount,
-        period,
-        autoClose: true,
-        isVisible: true, // Only show one popup
-      });
-    }
-  }, [betResults, popupData.isVisible]);
+  const handleClosePopup = () => {
+    setPopupData((prev) => ({ ...prev, isVisible: false }));
+  };
 
   return (
     <div className="bg-black min-h-screen min-w-full">

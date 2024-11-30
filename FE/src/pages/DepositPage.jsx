@@ -74,6 +74,7 @@ const DepositPage = () => {
 
   return (
     <div>
+      <ToastContainer/>
     <Header isLogout={false} isWingo={false}/> 
     <div className="bg-gray-900 min-h-screen flex flex-col items-center text-white p-4">
       

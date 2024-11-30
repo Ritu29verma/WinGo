@@ -104,6 +104,7 @@ const startRepeatingTimer = (io, durationMs) => {
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
         const userBets = socket.userBets;
         if (userBets && userBets.length > 0) {
+          const betResults = []; 
           for (const bet of userBets) {
             const { userId, content, purchaseAmount } = bet;
       
@@ -145,7 +146,7 @@ const startRepeatingTimer = (io, durationMs) => {
               await wallet.save();
             }
       
-            io.to(socketId).emit("betResult", {
+            betResults.push({
               success: isWin,
               amount: winLossDisplay,
               period: currentGameId,
@@ -156,6 +157,7 @@ const startRepeatingTimer = (io, durationMs) => {
               },
             });
           }
+          io.to(socketId).emit("betResults", betResults);
           socket.userBets = []; // Reset userBets to an empty array
           socket.emit("userBetsUpdate", socket.userBets); 
         }

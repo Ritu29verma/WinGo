@@ -86,16 +86,16 @@ const GameHistory = () => {
 
   useEffect(() => {
     const handleBetResult = (data) => {
-      console.log("Bet result received:", data);
       fetchGameResults();
     };
-
-    socket.on("betResult", handleBetResult);
-
+  
+    socket.on("betResults", handleBetResult);
+  
     return () => {
-      socket.off("betResult", handleBetResult);
+      socket.off("betResults", handleBetResult);
     };
-  }, [socket]);
+  }, []);
+  
 
   return (
     <div className="bg-black text-white w-full max-w-7xl mx-auto rounded-lg p-4 mt-4">

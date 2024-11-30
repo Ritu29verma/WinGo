@@ -209,10 +209,7 @@ export const handleWithdraw = async (req, res) => {
 
     // Save the withdraw amount to the database
     const savedWithdraw = await newWithdraw.save();
-
-    // Deduct the amount from the wallet balance
-    wallet.balance -= amount;
-    await wallet.save();
+  
 
     res.status(201).json({
       message: "Withdrawal request submitted successfully.",

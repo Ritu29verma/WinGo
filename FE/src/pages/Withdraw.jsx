@@ -111,6 +111,7 @@ const Withdraw = () => {
 
   return (
     <div>
+      <ToastContainer/>
     <Header isLogout={false} isWingo={false}/> 
     <div className="bg-gray-900 min-h-screen text-white p-4 flex flex-col items-center">
       {/* Header */}
