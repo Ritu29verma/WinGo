@@ -21,7 +21,8 @@ import DepositHistory from './pages/DepositHistory';
 import WithdrawalHistory from "./pages/WithdrawalHistory"
 import PrivateRouteUser from "./components/ProtectedRouteUser"; 
 import UsersTable from './components/AllUsers';
-
+import UserGameHistory from './components/UserGameHistory';
+import BetsData from './pages/betsData';
 function App() {
 
   return (
@@ -65,8 +66,12 @@ function App() {
                       <UsersTable/>
                     </ProtectedRoute>
                   }/>
-
-
+          <Route path="/user-game-history/:userId" element={<UserGameHistory />} />
+          <Route path="/admin/betsData" element={
+                    <ProtectedRoute>
+                      <BetsData/>
+                    </ProtectedRoute>
+                  }/>
           <Route path="/admin/approvedwithdrawl" element={
             <ProtectedRoute>
               <NonPendingWithdrawalsTable/>

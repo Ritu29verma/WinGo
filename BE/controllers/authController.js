@@ -6,6 +6,7 @@ import Wallet from "../models/Wallet.js";
 import MinAmount from "../models/MinAmount.js";
 import RechargeTransaction from "../models/RechargeTransaction.js";
 import Withdraw from "../models/Withdraw.js";
+import GameResult from "../models/GameResult.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -265,20 +266,19 @@ export const checkUser = async (req, res) => {
     if (!token) {
       return res.status(401).json({ isAuthenticated: false, message: "No token provided" });
     }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     const user = await User.findById(decoded.userId); // Ensure `userId` matches the JWT payload
     if (!user) {
       return res.status(403).json({ isAuthenticated: false, message: "Not authorized" });
     }
-
     res.status(200).json({ isAuthenticated: true, message: "User is authenticated" });
   } catch (error) {
     console.error("Error during user check:", error);
     res.status(403).json({ isAuthenticated: false, message: "Invalid or expired token" });
   }
 };
+
+
 
 
 

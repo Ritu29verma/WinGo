@@ -39,7 +39,14 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             Users
           </Link>
         </li>
-        
+        <li>
+          <Link
+            to="/admin/betsData"
+            className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
+          >
+            Bets Data
+          </Link>
+        </li>
         <li>
           <Link
             to="/admin/pendingrecharge"

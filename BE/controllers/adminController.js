@@ -9,7 +9,8 @@ import multer from "multer";
 import RechargeTransaction from "../models/RechargeTransaction.js";
 import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
-
+import GameResult from "../models/GameResult.js";
+import PurchasedAmount from "../models/PurchaseAmount.js";
 
 
 const storage = multer.diskStorage({
@@ -391,31 +392,90 @@ export const getNonPendingTransactions = async (req, res) => {
 
 
 
+
+
+
 export const getAllUsers = async (req, res) => {
   try {
-    // Fetch all users and their wallet details
-    const users = await User.find();
-    if (!users || users.length === 0) {
-      return res.status(404).json({ message: "No users found" });
+    const users = await User.find().sort({ createdAt: -1 }).lean();
+
+    const walletData = await Wallet.find()
+      .select("walletNo userId totalAmount") // Include totalAmount
+      .lean();
+
+    // Map wallet data by userId
+    const walletMap = walletData.reduce((acc, wallet) => {
+      acc[wallet.userId] = {
+        walletNo: wallet.walletNo,
+        totalAmount: wallet.totalAmount,
+      };
+      return acc;
+    }, {});
+
+    // Process each user
+    const processedUsers = users.map((user, index) => ({
+      _id:user._id,
+      serialNo: users.length - index, // Assign serial number
+      phoneNo: `${user.countryCode}${user.phoneNo}`, // Combine country code and phone number
+      inviteCode: user.inviteCode || "", // Handle blank invite code
+      totalWinAmount: user.totalWinAmount,
+      totalLossAmount: user.totalLossAmount,
+      walletNo: walletMap[user._id]?.walletNo || "N/A", // Fetch walletNo or set as N/A
+      totalAmount: walletMap[user._id]?.totalAmount || 0, // Fetch totalAmount or set as 0
+      dateOfRegistration: user.createdAt.toISOString(), // Convert to readable format
+    }));
+
+    res.status(200).json({
+      success: true,
+      users: processedUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+    });
+  }
+};
+
+export const AdminGameResults = async (req, res) => {
+  try {
+    const { date } = req.query; // Get custom date from query
+
+    const filter = {};
+    if (date) {
+      const startOfDay = new Date(date);
+      const endOfDay = new Date(date);
+      endOfDay.setDate(endOfDay.getDate() + 1);
+
+      filter.time = { $gte: startOfDay, $lt: endOfDay };
     }
 
-    // Fetch wallet details for each user
-    const userWallets = await Promise.all(
-      users.map(async (user) => {
-        const wallet = await Wallet.findOne({ userId: user._id });
-        return {
-          userId: user._id, // Include user ID in the response
-          phoneNo: user.phoneNo,
-          walletNo: wallet ? wallet.walletNo : "Wallet not found",
-          countryCode: user.countryCode,
-          totalAmount: wallet ? wallet.totalAmount : 0,
-        };
-      })
-    );
+    const gameResults = await GameResult.find(filter)
+      .sort({ time: -1 })
+      .populate("userid", " phoneNo"); // Populate phoneNo from user document
+    res.json(gameResults);
+  } catch (error) {
+    console.error("Error fetching admin game results:", error);
+    res.status(500).json({ error: "Failed to fetch game results for admin" });
+  }
+};
 
-    res.status(200).json(userWallets);
+
+export const getPurchasedAmount = async (req, res) => {
+  try {
+    const today = new Date().setHours(0, 0, 0, 0); // Ensure we're checking for today, starting from 12 AM
+    let totalAmount = await PurchasedAmount.findOne({ date: today });
+
+    if (!totalAmount) {
+      // If no data exists, create it with a starting amount of 0
+      totalAmount = new PurchasedAmount({ date: today, totalAmount: 0 });
+      await totalAmount.save();
+    }
+
+    res.status(200).json(totalAmount);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Failed to fetch total purchased amount." });
   }
 };

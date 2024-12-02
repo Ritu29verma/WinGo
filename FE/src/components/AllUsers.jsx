@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "./AdminNavbar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { useNavigate } from "react-router-dom";
 const UsersTable = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const handleRowClick = (userId) => {
+    navigate(`/user-game-history/${userId}`);
+  };
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
@@ -20,7 +23,11 @@ const UsersTable = () => {
       }
 
       const data = await response.json();
-      setUsers(data);
+      if (data.success) {
+        setUsers(data.users); // Assuming users array is in `data.users`
+      } else {
+        throw new Error(data.message || "Failed to fetch users.");
+      }
     } catch (error) {
       toast.error(error.message || "An error occurred while fetching users.");
     } finally {
@@ -47,21 +54,42 @@ const UsersTable = () => {
             <table className="min-w-full bg-gray-800 text-white">
               <thead>
                 <tr className="bg-gray-500">
-                  <th className="px-2 py-2 text-center">User ID</th>
+                  <th className="px-2 py-2 text-center">Sn.</th>
                   <th className="px-2 py-2 text-center">Phone</th>
                   <th className="px-2 py-2 text-center">Wallet No</th>
                   <th className="px-2 py-2 text-center">Total Balance</th>
+                  <th className="px-2 py-2 text-center">Win Amount</th>
+                  <th className="px-2 py-2 text-center">Loss Amount</th>
+                  <th className="px-2 py-2 text-center">Date of Registration</th>
+                  <th className="px-2 py-2 text-center">Invite Code</th>
+
                 </tr>
               </thead>
               <tbody>
                 {users.map((user, index) => (
-                  <tr key={index} className="border-t border-gray-600 text-center">
-                    <td className="px-2 py-2">{user.userId}</td>
-                    <td className="px-2 py-2">
-                      {user.countryCode} {user.phoneNo}
-                    </td>
+                  <tr
+                    key={index}
+                    onClick={() => handleRowClick(user._id)} // Assuming userId exists
+                    className="cursor-pointer hover:bg-gray-600 border-t border-gray-600 text-center"
+                    
+                  >
+                    <td className="px-2 py-2">{user.serialNo}</td>
+                    <td className="px-2 py-2">{user.phoneNo}</td>
+                    
                     <td className="px-2 py-2">{user.walletNo}</td>
-                    <td className="px-2 py-2"> ₹{parseFloat(user.totalAmount).toFixed(2)}/-</td>
+                    <td className="px-2 py-2">
+                      ₹{parseFloat(user.totalAmount).toFixed(2)}/-
+                    </td>
+                    <td className="px-2 py-2">
+                      ₹{parseFloat(user.totalWinAmount || 0).toFixed(2)}/-
+                    </td>
+                    <td className="px-2 py-2">
+                      ₹{parseFloat(user.totalLossAmount || 0).toFixed(2)}/-
+                    </td>
+                    <td className="px-2 py-2">{new Date(user.dateOfRegistration).toLocaleDateString()}</td>
+                    <td className="px-2 py-2">
+                      {user.inviteCode || "N/A"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

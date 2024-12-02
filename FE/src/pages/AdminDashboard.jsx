@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import socket from "../socket";
 import UserStats from "./AdminUsers";
+import AdminSuggestions from "../components/Betting";
+
 const AdminDashboard = ({ isSidebarOpen }) => {
   const [remainingTime, setRemainingTime] = useState(null);
   const [gameData, setGameData] = useState([]);
@@ -19,15 +21,15 @@ const AdminDashboard = ({ isSidebarOpen }) => {
     
     const fetchGameLogs = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`); // Replace with your backend URL
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`);
         const data = await response.json();
-        setGameData(data); // Set the fetched game data
+        setGameData(data);
       } catch (error) {
         console.error("Failed to fetch game logs:", error);
       }
     };
   
-    fetchGameLogs(); // Fetch logs on component load
+    fetchGameLogs();
   
     socket.on("gameData", (data) => {
       setGameData((prev) => [data, ...prev]); // Add new game data to the top
@@ -126,8 +128,10 @@ const AdminDashboard = ({ isSidebarOpen }) => {
           Stop Timer
         </button>
 
-        {/* Timer Status & Current Game ID */}
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
+    <div className="flex justify-center">
+    <div className="flex justify-between space-x-8  ">
+         {/* Timer Status & Current Game ID */}
+         <div className="bg-gray-800 rounded-lg p-4 text-center w-1/2">
           <h2 className="text-lg font-bold mb-4">Timer Status</h2>
           {timerStatus ? (
             <div className="flex justify-center items-center space-x-4">
@@ -160,7 +164,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
         </div>
 
         {/* Manual Number Input */}
-        <div className="bg-gray-800 rounded-lg p-4 text-center space-y-4">
+        <div className="bg-gray-800 rounded-lg p-4 text-center space-y-4 w-1/2">
           <label htmlFor="manualNumber" className="block mb-2 font-bold text-white">
             Enter a number (0-9) to set bet:
           </label>
@@ -169,7 +173,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
               id="manualNumber"
               value={manualNumber}
               onChange={(e) => setManualNumber(Number(e.target.value))}
-              className="md:w-1/4 w-1/2 p-2 rounded border border-gray-500 bg-gray-800 focus:outline-none focus:ring focus:ring-orange-500 text-white"
+              className="w-full p-2 rounded border border-gray-500 bg-gray-800 focus:outline-none focus:ring focus:ring-orange-500 text-white"
             >
               <option value="" disabled>
                 Select a number
@@ -193,6 +197,9 @@ const AdminDashboard = ({ isSidebarOpen }) => {
             Submit
           </button>
         </div>
+     </div>
+    </div>
+        <AdminSuggestions/>
         <UserStats/>
         {/* Game Data Logs */}
         <div className="bg-gray-800 rounded-lg p-4">

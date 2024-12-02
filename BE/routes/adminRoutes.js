@@ -1,5 +1,5 @@
 import express from "express";
-import { registerAdmin, loginAdmin,checkAdmin,updateMinAmount, createChannel,updateChannel,deleteChannel,getChannelsByType,getMinAmount,getRechargeByStatus,ApproveRecharge,rejectRecharge,getNonPendingTransactions,getAllUsers} from "../controllers/adminController.js";
+import { registerAdmin, loginAdmin,checkAdmin,updateMinAmount, createChannel,updateChannel,deleteChannel,getChannelsByType,getMinAmount,getRechargeByStatus,ApproveRecharge,rejectRecharge,getNonPendingTransactions,getAllUsers,AdminGameResults,getPurchasedAmount} from "../controllers/adminController.js";
 import { getPendingWithdrawals,getNonPendingWithdrawals,approveWithdrawal,rejectWithdrawal } from "../controllers/TransactionController.js";
 const router = express.Router();
 
@@ -17,6 +17,8 @@ router.post("/reject-withdrawal",rejectWithdrawal);
 router.post("/reject-recharge",rejectRecharge);
 router.get("/get-recharge",getRechargeByStatus);
 router.get("/non-pending-transactions",getNonPendingTransactions);
+router.get("/betsData" , AdminGameResults);
+router.get('/total-purchased-amount', getPurchasedAmount);
 router.post("/channels", createChannel);
 router.put('/channels/:id', updateChannel);
 router.delete('/channels/:id', deleteChannel);

@@ -4,6 +4,7 @@ import Game from "./models/Game.js";
 import GameResult from "./models/GameResult.js"; 
 import User from "./models/User.js"
 import Wallet from "./models/Wallet.js"
+
 const stats = {
   numbers: Array(10).fill(0),
   colors: { RED: 0, GREEN: 0, VIOLET: 0 },
@@ -16,6 +17,48 @@ const stats = {
   totalGameAmount: 0,
   uniqueUsers: new Set(),
 };
+
+const getMinimumBetsAndUsers = () => {
+  // Get minimum bet data
+  const minColorBet = Object.entries(stats.totalAmount.colors).reduce((min, [key, value]) => 
+    value < min.value ? { key, value } : min, 
+    { key: null, value: Infinity }
+  );
+  const minColorUsers = Object.entries(stats.colors).reduce((min, [key, value]) => 
+    value < min.value ? { key, value } : min, 
+    { key: null, value: Infinity }
+  );
+
+  const minNumberBet = stats.totalAmount.numbers.reduce((min, value, index) => 
+    value < min.value ? { index, value } : min, 
+    { index: null, value: Infinity }
+  );
+  const minNumberUsers = stats.numbers.reduce((min, value, index) => 
+    value < min.value ? { index, value } : min, 
+    { index: null, value: Infinity }
+  );
+
+  const minSizeBet = Object.entries(stats.totalAmount.size).reduce((min, [key, value]) => 
+    value < min.value ? { key, value } : min, 
+    { key: null, value: Infinity }
+  );
+  const minSizeUsers = Object.entries(stats.size).reduce((min, [key, value]) => 
+    value < min.value ? { key, value } : min, 
+    { key: null, value: Infinity }
+  );
+
+  return {
+    minColorBet,
+    minColorUsers,
+    minNumberBet,
+    minNumberUsers,
+    minSizeBet,
+    minSizeUsers,
+  };
+};
+
+
+
 const setManualGameData = (io, data) => {
   adminSelectedGameData = {
     number: data.number,
@@ -104,31 +147,46 @@ const startRepeatingTimer = (io, durationMs) => {
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
         const userBets = socket.userBets;
         if (userBets && userBets.length > 0) {
-          const betResults = []; 
+          const betResults = [];
           for (const bet of userBets) {
             const { userId, content, purchaseAmount } = bet;
       
-            // Match user's bet with game data
+            // Determine win condition
             const isWin =
               content == gameData.number ||
               gameData.color.includes(content.toUpperCase()) ||
               content.toLowerCase() === gameData.bigOrSmall.toLowerCase();
       
             const taxRate = 0.02;
-            const tax = purchaseAmount * taxRate;
-            const winAmount = 2 * purchaseAmount - tax;
-            const lossAmount = purchaseAmount - tax;
+            let winAmount = 0;
+      
+            // Calculate win amount based on content type
+            if (!isNaN(content) && [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(Number(content))) {
+             
+              winAmount = purchaseAmount * 9 ;
+            
+            } else if (
+              content.toLowerCase() === "big" ||
+              content.toLowerCase() === "small" ||
+              gameData.color.includes(content.toUpperCase())
+            ) {
+              // Content is big, small, or a color
+              winAmount = purchaseAmount * 2 ;
+            }
+      
+            // If lose, calculate loss amount
+            const lossAmount = purchaseAmount * (1 - taxRate);
       
             const result = gameData.number;
-            const winLossDisplay = isWin ? winAmount : -lossAmount;
+            const winLossDisplay = isWin ? winAmount * (1 - taxRate) : -lossAmount;
       
             // Save game result
             const gameResult = new GameResult({
               userid: userId,
               periodNumber: currentGameId,
               purchaseAmount,
-              amountAfterTax: isWin ? winAmount : 0,
-              tax,
+              amountAfterTax: isWin ? winAmount * (1 - taxRate) :-lossAmount,
+              tax: isWin ? winAmount * taxRate : purchaseAmount * taxRate,
               result,
               select: content,
               status: isWin ? "succeed" : "fail",
@@ -145,6 +203,18 @@ const startRepeatingTimer = (io, durationMs) => {
               wallet.updatedAt = Date.now();
               await wallet.save();
             }
+
+            const user = await User.findById(userId);
+            if (user) {
+              if (isWin) {
+                user.totalWinAmount += winLossDisplay;
+              } else {
+                user.totalLossAmount -= winLossDisplay;
+              }
+              user.updatedAt = Date.now();
+              await user.save();
+            }
+
       
             betResults.push({
               success: isWin,
@@ -159,9 +229,10 @@ const startRepeatingTimer = (io, durationMs) => {
           }
           io.to(socketId).emit("betResults", betResults);
           socket.userBets = []; // Reset userBets to an empty array
-          socket.emit("userBetsUpdate", socket.userBets); 
+          socket.emit("userBetsUpdate", socket.userBets);
         }
       }
+      
     }
 
     timerDuration -= 1;
@@ -173,7 +244,10 @@ const startRepeatingTimer = (io, durationMs) => {
       seconds,
       isTimerActive,
     });
-
+    
+    io.emit("suggestions", {
+      suggestions: getMinimumBetsAndUsers(),
+    });
     io.emit("bettingStats", {
       ...stats,
       uniqueUsersCount: stats.uniqueUsers.size, // Send count of unique users
@@ -249,6 +323,9 @@ export const initializeSocket = (server) => {
         io.emit("bettingStats", {
           ...stats,
           uniqueUsersCount: stats.uniqueUsers.size, // Send count of unique users
+        });
+        io.emit("suggestions",{
+          suggestions: getMinimumBetsAndUsers()
         });
         callback({ success: true });
       } catch (error) {
