@@ -13,23 +13,18 @@ const BetsData = () => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  useEffect(() => {
-    const fetchTotalPurchasedAmount = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin/total-purchased-amount`); // Adjust this URL based on your setup
-        setTotalAmount(response.data.totalAmount);
-      } catch (error) {
-        console.error('Error fetching total purchased amount:', error);
-      }
-    };
-
-    fetchTotalPurchasedAmount();
-
-    // Polling to check for updates every 10 seconds (you can adjust the interval)
-    const interval = setInterval(fetchTotalPurchasedAmount, 10000);
-    return () => clearInterval(interval); // Cleanup on component unmount
-  }, []);
-
+  const fetchTotalPurchasedAmount = async (date) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/admin/total-purchased-amount`,
+        { params: { date } }
+      );
+      setTotalAmount(response.data.totalAmount);
+    } catch (error) {
+      console.error("Error fetching total purchased amount:", error);
+      setTotalAmount(0); // Default to 0 in case of an error
+    }
+  };
 
   const fetchBetsData = async (date) => {
     try {
@@ -49,7 +44,8 @@ const BetsData = () => {
 
   useEffect(() => {
     // Fetch data for today's date on component mount
-    fetchBetsData(moment().format("YYYY-MM-DD"));
+    fetchBetsData(searchDate);
+    fetchTotalPurchasedAmount(searchDate);
   }, []);
 
   const handleSearch = () => {
@@ -58,6 +54,7 @@ const BetsData = () => {
       return;
     }
     fetchBetsData(searchDate);
+    fetchTotalPurchasedAmount(searchDate);
   };
 
   const toggleRow = (id) => {
@@ -72,31 +69,30 @@ const BetsData = () => {
     <AdminNavbar>
       <div className="bg-gray-700 text-white min-h-screen p-6 space-y-10">
         {/* Search Section */}
-      <div className="flex justify-between">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto w-1/3">
-          <h1 className="text-xl font-bold text-center mb-6">Search Bets Data</h1>
-          <div className="space-y-4">
-            <input
-              type="date"
-              value={searchDate}
-              onChange={(e) => setSearchDate(e.target.value)}
-              className="w-full p-2 rounded border border-gray-500 bg-gray-800 focus:outline-none focus:ring focus:ring-orange-500 text-white"
-            />
-            <button
-              onClick={handleSearch}
-              className="w-full bg-orange-500 text-white font-bold p-2 rounded-lg transform transition-transform hover:scale-95"
-            >
-              Search
-            </button>
+        <div className="flex justify-between">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto w-1/3">
+            <h1 className="text-xl font-bold text-center mb-6">Search Bets Data</h1>
+            <div className="space-y-4">
+              <input
+                type="date"
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+                className="w-full p-2 rounded border border-gray-500 bg-gray-800 focus:outline-none focus:ring focus:ring-orange-500 text-white"
+              />
+              <button
+                onClick={handleSearch}
+                className="w-full bg-orange-500 text-white font-bold p-2 rounded-lg transform transition-transform hover:scale-95"
+              >
+                Search
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
+            <h2 className="text-xl font-bold mb-6">Total Purchased Amount</h2>
+            <p className="text-2xl mt-4">₹{totalAmount}</p>
           </div>
         </div>
-
-        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
-        <h2 className="text-xl font-bold mb-6">Today's Total Purchased Amount</h2>
-        <p className="text-2xl mt-4">₹{totalAmount}</p>
-      </div>
-     
-    </div>
 
         {/* Results Section */}
         <div className="bg-gray-800 rounded-lg p-4 mx-auto">

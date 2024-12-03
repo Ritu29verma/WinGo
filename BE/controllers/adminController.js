@@ -464,13 +464,19 @@ export const AdminGameResults = async (req, res) => {
 
 export const getPurchasedAmount = async (req, res) => {
   try {
-    const today = new Date().setHours(0, 0, 0, 0); // Ensure we're checking for today, starting from 12 AM
-    let totalAmount = await PurchasedAmount.findOne({ date: today });
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date is required." });
+    }
+
+    const targetDate = new Date(date).setHours(0, 0, 0, 0); // Normalize date to midnight
+
+    let totalAmount = await PurchasedAmount.findOne({ date: targetDate });
 
     if (!totalAmount) {
-      // If no data exists, create it with a starting amount of 0
-      totalAmount = new PurchasedAmount({ date: today, totalAmount: 0 });
-      await totalAmount.save();
+      // If no data exists, return 0 as the total amount
+      return res.status(200).json({ totalAmount: 0 });
     }
 
     res.status(200).json(totalAmount);
