@@ -13,7 +13,7 @@ const AdminSuggestions = () => {
   }, []);
 
   return (
-    <div className="bg-gray-800 p-8 rounded-lg border-4 border-orange-500 ">
+    <div className="bg-gray-800 p-8 rounded-lg border-2 border-orange-500 ">
       <h2 className="text-center text-xl font-bold text-white mb-4">
         Suggestions for Setting Bets
       </h2>

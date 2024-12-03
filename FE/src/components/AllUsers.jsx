@@ -7,8 +7,8 @@ const UsersTable = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const handleRowClick = (userId) => {
-    navigate(`/user-game-history/${userId}`);
+  const handleRowClick = (userId,phone) => {
+    navigate(`/user-game-history/${userId}`,{ state: { phone }});
   };
   const fetchUsers = async () => {
     try {
@@ -69,7 +69,7 @@ const UsersTable = () => {
                 {users.map((user, index) => (
                   <tr
                     key={index}
-                    onClick={() => handleRowClick(user._id)} // Assuming userId exists
+                    onClick={() => handleRowClick(user._id,user.phoneNo)} // Assuming userId exists
                     className="cursor-pointer hover:bg-gray-600 border-t border-gray-600 text-center"
                     
                   >

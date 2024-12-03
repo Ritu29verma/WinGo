@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AdminNavbar from "./AdminNavbar";
@@ -7,13 +7,18 @@ import "react-toastify/dist/ReactToastify.css";
 
 const UserGameHistory = () => {
   const { userId } = useParams();
+  const { state } = useLocation(); // Access the state object
+  const phone = state?.phone || "Unknown"; // Safely access phone
+
   const [gameData, setGameData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchGameResults = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/game/getGameResults-by-id?userId=${userId}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/game/getGameResults-by-id?userId=${userId}`
+        );
         setGameData(response.data.gameData || []);
       } catch (error) {
         console.error("Error fetching game results:", error);
@@ -29,7 +34,7 @@ const UserGameHistory = () => {
     <AdminNavbar>
       <div className="bg-gray-700 min-h-screen p-4">
         <h2 className="text-center text-xl font-bold mb-4 text-white">
-          Game Logs
+          User: {phone}
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-gray-400 text-center">
@@ -55,7 +60,7 @@ const UserGameHistory = () => {
                 </tr>
               ) : gameData.length > 0 ? (
                 gameData.map((data, index) => (
-                  <tr key={index} className="bg-gray-900">
+                  <tr key={index} className="bg-gray-900 border-t border-gray-600">
                     <td className="px-4 py-2">{data.periodNumber}</td>
                     <td className="px-4 py-2">₹{data.purchaseAmount}</td>
                     <td className="px-4 py-2">₹{data.amountAfterTax}</td>

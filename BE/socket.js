@@ -4,7 +4,31 @@ import Game from "./models/Game.js";
 import GameResult from "./models/GameResult.js"; 
 import User from "./models/User.js"
 import Wallet from "./models/Wallet.js"
+import PurchasedAmount from "./models/PurchaseAmount.js";
 
+const updatePurchasedAmount = async (amount) => {
+  const currentDate = new Date().setHours(0, 0, 0, 0);
+
+  try {
+    // Check if a document exists for the current date
+    let purchasedAmountDoc = await PurchasedAmount.findOne({ date: currentDate });
+
+    if (purchasedAmountDoc) {
+      // Update the total amount for the existing document
+      purchasedAmountDoc.totalAmount += amount;
+      await purchasedAmountDoc.save();
+    } else {
+      // Create a new document for the current date
+      purchasedAmountDoc = new PurchasedAmount({
+        date: currentDate,
+        totalAmount: amount,
+      });
+      await purchasedAmountDoc.save();
+    }
+  } catch (error) {
+    console.error("Error updating purchased amount:", error);
+  }
+};
 const stats = {
   numbers: Array(10).fill(0),
   colors: { RED: 0, GREEN: 0, VIOLET: 0 },
@@ -118,6 +142,7 @@ const startRepeatingTimer = (io, durationMs) => {
       stats.totalAmount.numbers.fill(0);
       Object.keys(stats.totalAmount.colors).forEach((key) => (stats.totalAmount.colors[key] = 0));
       Object.keys(stats.totalAmount.size).forEach((key) => (stats.totalAmount.size[key] = 0));
+      await updatePurchasedAmount(stats.totalGameAmount);
       stats.totalGameAmount = 0;
       stats.uniqueUsers.clear();
       timerDuration = durationMs / 1000;

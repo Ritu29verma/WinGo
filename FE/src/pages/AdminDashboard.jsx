@@ -128,10 +128,10 @@ const AdminDashboard = ({ isSidebarOpen }) => {
           Stop Timer
         </button>
 
-    <div className="flex justify-center">
-    <div className="flex justify-between space-x-8  ">
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
          {/* Timer Status & Current Game ID */}
-         <div className="bg-gray-800 rounded-lg p-4 text-center w-1/2">
+         <div className="bg-gray-800 rounded-lg p-4 text-center">
           <h2 className="text-lg font-bold mb-4">Timer Status</h2>
           {timerStatus ? (
             <div className="flex justify-center items-center space-x-4">
@@ -151,20 +151,11 @@ const AdminDashboard = ({ isSidebarOpen }) => {
             <strong>Current Game ID:</strong> {currentGameId}
           </div>
         )}
-        {adminSelectedGameData && (
-          <div className="mt-4 text-bold ">
-          <strong>Manually Set Game Data:</strong>
-          <div className="text-gold">
-            Number: {adminSelectedGameData.number}, 
-            Color: {adminSelectedGameData.color.join(", ")}, 
-            Big/Small: {adminSelectedGameData.bigOrSmall}
-          </div>
-        </div>
-        )}
+        
         </div>
 
         {/* Manual Number Input */}
-        <div className="bg-gray-800 rounded-lg p-4 text-center space-y-4 w-1/2">
+        <div className="bg-gray-800 rounded-lg p-4 text-center space-y-4">
           <label htmlFor="manualNumber" className="block mb-2 font-bold text-white">
             Enter a number (0-9) to set bet:
           </label>
@@ -173,7 +164,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
               id="manualNumber"
               value={manualNumber}
               onChange={(e) => setManualNumber(Number(e.target.value))}
-              className="w-full p-2 rounded border border-gray-500 bg-gray-800 focus:outline-none focus:ring focus:ring-orange-500 text-white"
+              className="w-3/4 p-2 rounded border border-gray-500 bg-gray-800 focus:outline-none focus:ring focus:ring-orange-500 text-white"
             >
               <option value="" disabled>
                 Select a number
@@ -196,9 +187,18 @@ const AdminDashboard = ({ isSidebarOpen }) => {
           >
             Submit
           </button>
+          {adminSelectedGameData && (
+          <div className="mt-4 text-bold ">
+          <div className="text-gold">
+            Number: {adminSelectedGameData.number}, 
+            Color: {adminSelectedGameData.color.join(", ")}, 
+            Big/Small: {adminSelectedGameData.bigOrSmall}
+          </div>
+        </div>
+        )}
         </div>
      </div>
-    </div>
+    
         <AdminSuggestions/>
         <UserStats/>
         {/* Game Data Logs */}
