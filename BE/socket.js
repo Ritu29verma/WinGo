@@ -330,7 +330,7 @@ export const initializeSocket = (server) => {
         stats.uniqueUsers.add(userId);
         socket.emit("userBetsUpdate", socket.userBets);
         
-        socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount } });
+        socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
         if (!isNaN(content)) {
           const number = parseInt(content, 10);
           stats.numbers[number]++;

@@ -31,6 +31,17 @@ const WalletSection = ({ token }) => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const handleBetResult = (data) => {
+      fetchWalletDetails()
+    };
+  
+    socket.on("betResults", handleBetResult);
+  
+    return () => {
+      socket.off("betResults", handleBetResult);
+    };
+  }, []);
 
   // Initial fetch of wallet details
   useEffect(() => {
@@ -44,19 +55,7 @@ const WalletSection = ({ token }) => {
   const handleWithdraw = () => {
     navigate("/wingo/withdraw");
   };
-  useEffect(() => {
-    const handleBetResult = (data) => {
-      console.log("Bet result received:", data);
-      fetchWalletDetails();
-    };
-
-    socket.on("betResult", handleBetResult);
-
-    // Clean up the listener on unmount
-    return () => {
-      socket.off("betResult", handleBetResult);
-    };
-  }, [socket]);
+  
 
   useEffect(() => {
     const handleWalletUpdate = (data) => {
