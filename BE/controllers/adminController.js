@@ -11,7 +11,7 @@ import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 import GameResult from "../models/GameResult.js";
 import PurchasedAmount from "../models/PurchaseAmount.js";
-
+import {io,userSockets} from "../socket.js"
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -297,7 +297,13 @@ export const ApproveRecharge = async(req,res) =>{
     transaction.status = "approved";
     transaction.updatedAt = new Date();
     await transaction.save();
-
+    const userSocketId = userSockets.get(wallet.userId.toString());
+    if (userSocketId) {
+      io.to(userSocketId).emit("walletUpdated", {
+        walletNo: wallet.walletNo,
+        totalAmount: wallet.totalAmount,
+      });
+    }
     return res.status(200).json({
       message: "Transaction approved successfully.",
       wallet,

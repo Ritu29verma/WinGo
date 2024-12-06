@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import QRModal from "../components/QRModal";
 import { Link } from "react-router-dom";
 import Header from "../components/Header"
-
+import socket from "../socket"
 const DepositPage = () => {
   const [channels, setChannels] = useState({});
   const [selectedType, setSelectedType] = useState("E-Wallet");
@@ -14,6 +14,23 @@ const DepositPage = () => {
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [depositAmount, setDepositAmount] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleWalletUpdated = (data) => {
+      if (data.walletNo === walletDetails.walletNo) {
+        setWalletDetails((prev) => ({
+          ...prev,
+          totalAmount: data.totalAmount,
+        }));
+      }
+    };
+
+    socket.on("walletUpdated", handleWalletUpdated);
+
+    return () => {
+      socket.off("walletUpdated", handleWalletUpdated); // Cleanup on unmount
+    };
+  }, [walletDetails.walletNo]);
 
   useEffect(() => {
     const fetchWalletDetails = async () => {

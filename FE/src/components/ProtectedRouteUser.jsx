@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
+import socket from "../socket";
 
 const PrivateRouteUser = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -30,7 +31,14 @@ const PrivateRouteUser = ({ children }) => {
 
     verifyUser();
   }, []);
-
+  useEffect(() => {
+    if (isAuthenticated) {
+      const userId = localStorage.getItem("user_id");
+      if (userId) {
+        socket.emit("registerUser", JSON.parse(userId));
+      }
+    }
+  }, [isAuthenticated]);
   // Show loading or spinner while verifying user status
   if (isAuthenticated === null) {
     return <div>Loading...</div>;

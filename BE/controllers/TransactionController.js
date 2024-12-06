@@ -1,5 +1,6 @@
 import Withdraw from "../models/Withdraw.js";
 import Wallet from "../models/Wallet.js";
+import {io,userSockets} from "../socket.js"
 export const getPendingWithdrawals = async (req, res) => {
   try {
     // Fetch pending withdrawals sorted by creation date (latest first)
@@ -89,7 +90,13 @@ export const approveWithdrawal = async (req, res) => {
       await wallet.save();
       withdrawal.status = "approved";
       await withdrawal.save();
-  
+      const userSocketId = userSockets.get(wallet.userId.toString());
+      if (userSocketId) {
+        io.to(userSocketId).emit("walletUpdated", {
+          walletNo: wallet.walletNo,
+          totalAmount: wallet.totalAmount,
+        });
+      }
       return res.status(200).json({
         message: "Withdrawal approved successfully.",
         withdrawal,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { FaPhoneAlt, FaLock,FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer,toast } from 'react-toastify'; // Importing toast for notifications
@@ -14,7 +14,7 @@ function LoginPage() {
   const [countryCode, setCountryCode] = useState("");
   const navigate = useNavigate();
 
-  // Handle phone number change
+
   const handlePhoneNumberChange = (value, countryData) => {
     setPhoneNo(value); // Set phone number
     setCountryCode(countryData.dialCode); 
