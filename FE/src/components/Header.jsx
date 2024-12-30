@@ -38,7 +38,7 @@ function Header({ isRegister, isLogin, isWingo, isLogout }) {
     localStorage.removeItem("user_id");
     setIsAuthenticated(false);
     setIsAuthorized(false);
-    navigate("/login");
+    window.location.href = "https://goldencma.com/logout";
   };
 
   return (

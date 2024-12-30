@@ -14,8 +14,6 @@ const PrivateRouteUser = ({ children }) => {
           setIsAuthenticated(false);
           return;
         }
-
-        // Verify the token with the backend
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/verify`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,17 +32,44 @@ const PrivateRouteUser = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       const userId = localStorage.getItem("user_id");
+      const token = localStorage.getItem("token");
+
       if (userId) {
-        socket.emit("registerUser", JSON.parse(userId));
+        let parsedUserId;
+        try {
+          parsedUserId = JSON.parse(userId);
+        } catch (e) {
+          parsedUserId = userId; 
+        }
+        // Emit the user registration event to the socket
+        socket.emit("registerUser", parsedUserId);
       }
-    }
+
+      if (token) {
+        // Call the sync-wallets API
+        const syncWallets = async () => {
+          try {
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/sync-wallets`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            console.log("Sync Wallets Response:", response.data);
+          } catch (error) {
+            console.error("Error syncing wallets:", error.response?.data || error.message);
+          }
+        };
+
+        syncWallets();
+      }}
+    
   }, [isAuthenticated]);
-  // Show loading or spinner while verifying user status
+
   if (isAuthenticated === null) {
     return <div>Loading...</div>;
   }
 
-  // Redirect to "/login" if the user is not authenticated
+
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 

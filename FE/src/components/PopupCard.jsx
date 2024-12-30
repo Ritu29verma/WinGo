@@ -31,7 +31,7 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
   };
 
   const handlePlaceBet = () => {
-    const userId = JSON.parse(localStorage.getItem("user_id"));
+    const userId = localStorage.getItem("user_id");
     const data = { userId, content, purchaseAmount: quantity };
 
     socket.emit("userBet", data, (response) => {

@@ -294,6 +294,32 @@ export const ApproveRecharge = async(req,res) =>{
     wallet.totalAmount += transaction.amount;
     wallet.updatedAt = new Date();
     await wallet.save();
+
+    const user = await User.findById(transaction.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const code = user.code;
+
+    // Fetch the client from MySQL
+    const [results] = await req.mysqlPool.query(
+      "SELECT * FROM client WHERE code = ?",
+      [code]
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Client not found in MySQL." });
+    }
+
+    const client = results[0];
+    const updatedAt = new Date();
+    await req.mysqlPool.query(
+      "UPDATE client SET matkaLimit = ?, updated_at = ? WHERE Id = ?",
+      [wallet.totalAmount, updatedAt, client.Id]
+    );
+
+
     transaction.status = "approved";
     transaction.updatedAt = new Date();
     await transaction.save();
@@ -422,7 +448,7 @@ export const getAllUsers = async (req, res) => {
     const processedUsers = users.map((user, index) => ({
       _id:user._id,
       serialNo: users.length - index, // Assign serial number
-      phoneNo: `${user.countryCode}${user.phoneNo}`, // Combine country code and phone number
+      phoneNo: `${user.phoneNo}`, // Combine country code and phone number
       inviteCode: user.inviteCode || "", // Handle blank invite code
       totalWinAmount: user.totalWinAmount,
       totalLossAmount: user.totalLossAmount,
@@ -430,7 +456,7 @@ export const getAllUsers = async (req, res) => {
       totalAmount: walletMap[user._id]?.totalAmount || 0, // Fetch totalAmount or set as 0
       dateOfRegistration: user.createdAt.toISOString(), // Convert to readable format
     }));
-
+    processedUsers.reverse();
     res.status(200).json({
       success: true,
       users: processedUsers,

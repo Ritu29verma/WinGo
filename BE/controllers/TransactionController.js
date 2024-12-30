@@ -1,6 +1,7 @@
 import Withdraw from "../models/Withdraw.js";
 import Wallet from "../models/Wallet.js";
 import {io,userSockets} from "../socket.js"
+import User from "../models/User.js";
 export const getPendingWithdrawals = async (req, res) => {
   try {
     // Fetch pending withdrawals sorted by creation date (latest first)
@@ -97,6 +98,28 @@ export const approveWithdrawal = async (req, res) => {
           totalAmount: wallet.totalAmount,
         });
       }
+      const user = await User.findById(wallet.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User associated with the wallet not found." });
+      }
+
+      const [results] = await req.mysqlPool.query(
+        'SELECT * FROM client WHERE code = ?',
+        [user.code]
+      );
+  
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Client not found in MySQL." });
+      }
+  
+      const client = results[0];
+
+      const updatedMatkaLimit = wallet.totalAmount;
+      await req.mysqlPool.query(
+        'UPDATE client SET matkaLimit = ?, updated_at = NOW() WHERE Id = ?',
+        [updatedMatkaLimit, client.Id]
+      );
+
       return res.status(200).json({
         message: "Withdrawal approved successfully.",
         withdrawal,
