@@ -23,6 +23,7 @@ import PrivateRouteUser from "./components/ProtectedRouteUser";
 import UsersTable from './components/AllUsers';
 import UserGameHistory from './components/UserGameHistory';
 import BetsData from './pages/betsData';
+import LoginWingo from './pages/LoginGoldenCMA';
 function App() {
 
   return (
@@ -79,7 +80,7 @@ function App() {
           }/>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
+          <Route path="/login-wingo" element={<LoginWingo/>}/>
           <Route path="/admin/register" element={<AdminSignup />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           {/* <Route path="/" element={<Home />} /> */}

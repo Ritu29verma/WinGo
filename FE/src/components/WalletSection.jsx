@@ -47,7 +47,22 @@ const WalletSection = ({ token }) => {
   useEffect(() => {
     fetchWalletDetails();
   }, []);
+  useEffect(() => {
+    const handleWalletUpdated = (data) => {
+      if (data.walletNo === walletDetails.walletNo) {
+        setWalletDetails((prev) => ({
+          ...prev,
+          totalAmount: data.totalAmount,
+        }));
+      }
+    };
 
+    socket.on("walletUpdated", handleWalletUpdated);
+
+    return () => {
+      socket.off("walletUpdated", handleWalletUpdated); // Cleanup on unmount
+    };
+  }, [walletDetails.walletNo]);
   const handleDeposit = () => {
     navigate("/wingo/deposit");
   };

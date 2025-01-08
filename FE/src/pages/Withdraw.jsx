@@ -5,7 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
-
+import socket from "../socket"
 const Withdraw = () => {
   const [activeTab, setActiveTab] = useState("Bank Card");
   const [walletDetails, setWalletDetails] = useState({ walletNo: "", totalAmount: 0 });
@@ -18,7 +18,22 @@ const Withdraw = () => {
     amount: "",
   });
   const navigate = useNavigate();
+  useEffect(() => {
+    const handleWalletUpdated = (data) => {
+      if (data.walletNo === walletDetails.walletNo) {
+        setWalletDetails((prev) => ({
+          ...prev,
+          totalAmount: data.totalAmount,
+        }));
+      }
+    };
 
+    socket.on("walletUpdated", handleWalletUpdated);
+
+    return () => {
+      socket.off("walletUpdated", handleWalletUpdated); // Cleanup on unmount
+    };
+  }, [walletDetails.walletNo]);
   
 
   useEffect(() => {

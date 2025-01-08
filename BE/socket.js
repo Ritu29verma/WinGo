@@ -5,7 +5,8 @@ import GameResult from "./models/GameResult.js";
 import User from "./models/User.js"
 import Wallet from "./models/Wallet.js"
 import PurchasedAmount from "./models/PurchaseAmount.js";
-
+export let userSockets = new Map();
+export let io;
 const updatePurchasedAmount = async (amount) => {
   const currentDate = new Date().setHours(0, 0, 0, 0);
 
@@ -29,6 +30,7 @@ const updatePurchasedAmount = async (amount) => {
     console.error("Error updating purchased amount:", error);
   }
 };
+
 const stats = {
   numbers: Array(10).fill(0),
   colors: { RED: 0, GREEN: 0, VIOLET: 0 },
@@ -283,7 +285,7 @@ const startRepeatingTimer = (io, durationMs) => {
 
 
 export const initializeSocket = (server) => {
-  const io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: "http://localhost:5173",
       methods: ["GET", "POST"],
@@ -292,6 +294,10 @@ export const initializeSocket = (server) => {
 
   io.on("connection", (socket) => {
     console.log("New client connected:", socket.id);
+    socket.on("registerUser", (userId) => {
+      userSockets.set(userId, socket.id);
+      console.log(`User ${userId} connected with socket ID ${socket.id}`);
+    });
 
     socket.on("startTimer", (durationMs, callback) => {
       startRepeatingTimer(io, durationMs);
@@ -371,8 +377,16 @@ export const initializeSocket = (server) => {
 
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
+      for (const [userId, socketId] of userSockets.entries()) {
+        if (socketId === socket.id) {
+          console.log("User disconnected:", userId);
+          userSockets.delete(userId);
+          break;
+        }
+      }
     });
   });
 
   return io;
 };
+

@@ -1,39 +1,17 @@
 import mongoose from "mongoose";
 
+// MongoDB Schemas
 const UserSchema = new mongoose.Schema({
-  phoneNo: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  countryCode: {
-    type: String,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6,
-  },
-  inviteCode: {
-    type: String,
-  },
-  totalWinAmount: {
-    type: Number,
-    default: 0, // Initialize with 0
-  },
-  totalLossAmount: {
-    type: Number,
-    default: 0, // Initialize with 0
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+  phoneNo: String,
+  countryCode: String,
+  password: { type: String, required: true},
+  inviteCode: String,
+  totalWinAmount: { type: Number, default: 0 },
+  totalLossAmount: { type: Number, default: 0 },
+  name: { type: String, required: true },
+  code: { type: String, unique: true, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 const User = mongoose.model("User", UserSchema);

@@ -7,7 +7,7 @@ import DetailsSection from "../components/DetailsSection";
 import Header from "../components/Header";
 import WinOrLoss from "../components/WinOrLoss";
 import socket from "../socket";
-
+import axios from "axios";
 const WinGo = () => {
   const [popupData, setPopupData] = useState({
     isWin: false,
@@ -19,6 +19,24 @@ const WinGo = () => {
   });
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Call the sync-wallets API
+      const syncWallets = async () => {
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/sync-wallets`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          console.log("Sync Wallets Response:", response.data);
+        } catch (error) {
+          console.error("Error syncing wallets:", error.response?.data || error.message);
+        }
+      };
+
+      syncWallets();
+    }
     // Listen for betResults from the server
     socket.on("betResults", (betResults) => {
       if (betResults && betResults.length > 0) {
