@@ -24,6 +24,7 @@ import UsersTable from './components/AllUsers';
 import UserGameHistory from './components/UserGameHistory';
 import BetsData from './pages/betsData';
 import LoginWingo from './pages/LoginGoldenCMA';
+import Loader from './components/Loader';
 function App() {
 
   return (
@@ -31,6 +32,7 @@ function App() {
       <ToastContainer />
       <BrowserRouter>
         <Routes>
+          <Route path="/loader" element={<Loader />} />
           <Route
             path="/admin/dashboard"
             element={

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Loader from "../components/Loader";
 
 const Login = () => {
   const location = useLocation();
@@ -16,8 +17,6 @@ const Login = () => {
       });
 
       const { token, user } = response.data;
-
-      // Save to local storage
       localStorage.setItem("token", token);
       localStorage.setItem("user_id", user.id);
 
@@ -39,7 +38,12 @@ const Login = () => {
     }
   }, [location.search]); // Re-run if the URL changes
 
-  return <div>Loading...</div>;
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-700">
+      <Loader /> 
+      {/* loading */}
+    </div>
+  );
 };
 
 export default Login;

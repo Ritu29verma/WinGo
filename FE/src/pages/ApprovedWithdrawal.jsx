@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import Loader from "../components/Loader";
 const NonPendingWithdrawalsTable = () => {
   const [withdrawals, setWithdrawals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,14 +33,18 @@ const NonPendingWithdrawalsTable = () => {
   }, []);
 
   return (
-    <AdminNavbar>
-      <div className="p-4 bg-gray-700 min-h-screen">
+  <AdminNavbar>
+  <div className="p-4 bg-gray-700 min-h-screen relative">
+    {isLoading ? (
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+        <Loader />
+      </div>
+    ) : (
+      <>
         <h2 className="md:text-2xl text-lg font-bold mb-5 text-center text-gray-100">
-        Withdrawal Requests
+          Withdrawal Requests
         </h2>
-        {isLoading ? (
-          <p className="text-center text-gray-500">Loading...</p>
-        ) : withdrawals.length === 0 ? (
+        {withdrawals.length === 0 ? (
           <p className="text-center text-gray-500">No non-pending withdrawals found.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -91,8 +95,11 @@ const NonPendingWithdrawalsTable = () => {
           </div>
         )}
         <ToastContainer />
-      </div>
-    </AdminNavbar>
+      </>
+    )}
+  </div>
+</AdminNavbar>
+
   );
 };
 

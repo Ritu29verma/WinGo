@@ -11,7 +11,7 @@ import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 import GameResult from "../models/GameResult.js";
 import PurchasedAmount from "../models/PurchaseAmount.js";
-import {io,userSockets} from "../socket.js"
+import {io,userSockets} from "../socket.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -28,7 +28,6 @@ const storage = multer.diskStorage({
 });
 
 export const upload = multer({ storage });
-
 
 
 export const registerAdmin = async (req, res) => {
@@ -58,8 +57,6 @@ export const registerAdmin = async (req, res) => {
 };
 
 
-
-
 export const loginAdmin = async (req, res) => {
     try {
       const { phoneNo, password } = req.body;
@@ -85,8 +82,6 @@ export const loginAdmin = async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
     }
   };
-  
-
 
 
   export const checkAdmin = async (req, res) => {
@@ -472,20 +467,32 @@ export const getAllUsers = async (req, res) => {
 
 export const AdminGameResults = async (req, res) => {
   try {
-    const { date } = req.query; // Get custom date from query
+    const { fromDate, toDate } = req.query; // Get fromDate and toDate from query
 
     const filter = {};
-    if (date) {
-      const startOfDay = new Date(date);
-      const endOfDay = new Date(date);
-      endOfDay.setDate(endOfDay.getDate() + 1);
-
-      filter.time = { $gte: startOfDay, $lt: endOfDay };
+    
+    // Validate that fromDate and toDate are provided
+    if (!fromDate || !toDate) {
+      return res.status(400).json({ message: "Both fromDate and toDate are required." });
     }
 
+    // Parse and validate the dates
+    const startOfDay = new Date(fromDate);
+    const endOfDay = new Date(toDate);
+    endOfDay.setUTCHours(23, 59, 59, 999); // Set to end of the day
+
+    // Add date range filter
+    filter.time = { $gte: startOfDay, $lte: endOfDay };
+
+    // Fetch game results based on the filter
     const gameResults = await GameResult.find(filter)
-      .sort({ time: -1 })
-      .populate("userid", " phoneNo"); // Populate phoneNo from user document
+      .sort({ time: -1 }) // Sort by most recent first
+      .populate("userid", "phoneNo"); // Populate phoneNo from user document
+
+    if (!gameResults.length) {
+      return res.status(404).json({ message: "No game results found for the specified date range." });
+    }
+
     res.json(gameResults);
   } catch (error) {
     console.error("Error fetching admin game results:", error);
@@ -496,24 +503,57 @@ export const AdminGameResults = async (req, res) => {
 
 export const getPurchasedAmount = async (req, res) => {
   try {
-    const { date } = req.query;
+    const { fromDate, toDate } = req.query;
 
-    if (!date) {
-      return res.status(400).json({ message: "Date is required." });
+    // Validate that both `from` and `to` dates are provided
+    if (!fromDate || !toDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Both 'from' and 'to' dates are required.",
+      });
     }
 
-    const targetDate = new Date(date).setHours(0, 0, 0, 0); // Normalize date to midnight
+    // Normalize 'from' date to the start of the day (00:00:00.000)
+    const fromdate = new Date(fromDate);
+    fromdate.setHours(0, 0, 0, 0);
 
-    let totalAmount = await PurchasedAmount.findOne({ date: targetDate });
+    // Normalize 'to' date to the end of the day (23:59:59.999)
+    const todate = new Date(toDate);
+    todate.setHours(23, 59, 59, 999);
 
-    if (!totalAmount) {
-      // If no data exists, return 0 as the total amount
-      return res.status(200).json({ totalAmount: 0 });
+    // Query for purchased amounts within the date range
+    const query = {
+      date: {
+        $gte: fromdate, // Include the `from` date
+        $lte: todate,   // Include the `to` date
+      },
+    };
+
+    // Fetch purchased amounts matching the query
+    const purchasedAmounts = await PurchasedAmount.find(query).lean();
+
+    // Check if any records were found
+    if (!purchasedAmounts.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No purchased amounts found for the specified date range.",
+      });
     }
 
-    res.status(200).json(totalAmount);
+    // Calculate the total amount for the specified date range
+    const totalAmount = purchasedAmounts.reduce((sum, record) => sum + record.totalAmount, 0);
+
+    // Return the result
+    res.status(200).json({
+      success: true,
+      totalAmount,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch total purchased amount." });
+    console.error("Error fetching purchased amount:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
+

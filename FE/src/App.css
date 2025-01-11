@@ -99,3 +99,33 @@
   color: #FFD700;
   font-weight: bold;
 }
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  animation: spinner-rotate 4s infinite;
+}
+
+.spinner::before,
+.spinner::after {
+  content: "";
+  grid-area: 1/1;
+  border: 9px solid;
+  border-radius: 50%;
+  border-color: #474bff #474bff transparent transparent;
+  mix-blend-mode: darken;
+  animation: spinner-rotate 1s infinite linear;
+}
+
+.spinner::after {
+  border-color: transparent transparent #dbdcef #dbdcef;
+  animation-direction: reverse;
+}
+
+@keyframes spinner-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+ 

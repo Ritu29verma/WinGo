@@ -4,11 +4,12 @@ import axios from "axios";
 import AdminNavbar from "./AdminNavbar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Loader from "../components/Loader";
 
 const UserGameHistory = () => {
   const { userId } = useParams();
-  const { state } = useLocation(); // Access the state object
-  const phone = state?.phone || "Unknown"; // Safely access phone
+  const { state } = useLocation(); 
+  const phone = state?.phone || "Unknown"; 
 
   const [gameData, setGameData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,13 @@ const UserGameHistory = () => {
 
   return (
     <AdminNavbar>
-      <div className="bg-gray-700 min-h-screen p-4">
+      <div className="bg-gray-700 min-h-screen p-4 relative">
+      {loading ? (
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+        <Loader />
+      </div>
+    ) : (
+      <>
         <h2 className="text-center text-xl font-bold mb-4 text-white">
           User: {phone}
         </h2>
@@ -52,13 +59,7 @@ const UserGameHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td className="px-4 py-2" colSpan="9">
-                    Loading...
-                  </td>
-                </tr>
-              ) : gameData.length > 0 ? (
+             {gameData.length > 0 ? (
                 gameData.map((data, index) => (
                   <tr key={index} className="bg-gray-900 border-t border-gray-600">
                     <td className="px-4 py-2">{data.periodNumber}</td>
@@ -89,12 +90,14 @@ const UserGameHistory = () => {
                   </td>
                 </tr>
               )}
-            </tbody>
+             </tbody>
           </table>
         </div>
-        <ToastContainer />
-      </div>
-    </AdminNavbar>
+      </>
+    )}
+    <ToastContainer />
+  </div>
+</AdminNavbar>
   );
 };
 

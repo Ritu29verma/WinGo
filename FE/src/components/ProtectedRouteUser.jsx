@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
 import socket from "../socket";
+import Loader from "../components/Loader";
 
 const PrivateRouteUser = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -64,9 +65,13 @@ const PrivateRouteUser = ({ children }) => {
       }}
     
   }, [isAuthenticated]);
-
+//loading
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-customBlue">
+        <Loader />
+      </div>
+    );
   }
 
 

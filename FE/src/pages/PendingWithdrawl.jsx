@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import Loader from "../components/Loader";
 const PendingWithdrawalsTable = () => {
   const [withdrawals, setWithdrawals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,14 +81,16 @@ const PendingWithdrawalsTable = () => {
   }, []);
 
   return (
-    <div className="min-h-screen min-w-full">
+    <div className="min-h-screen min-w-full relative">
     <AdminNavbar>
       <div className="p-5 bg-gray-700 h-screen">
         <h2 className="text-2xl font-bold mb-5 text-center text-gray-100">
           Pending Withdrawal Requests
         </h2>
         {isLoading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+            <Loader />
+          </div>
         ) : withdrawals.length === 0 ? (
           <p className="text-center text-gray-500">No pending withdrawals found.</p>
         ) : (
@@ -100,7 +102,6 @@ const PendingWithdrawalsTable = () => {
                   <th className="px-4 py-2 text-center">Wallet No</th>
                   <th className="px-4 py-2 text-center">Type</th>
                   <th className="px-4 py-2 text-center">Bank Name</th>
-                  
                   <th className="px-4 py-2 text-center">Account No</th>
                   <th className="px-4 py-2 text-center">IFSC</th>
                   <th className="px-4 py-2 text-center">Cardholder Name</th>
@@ -116,7 +117,6 @@ const PendingWithdrawalsTable = () => {
                     <td className="px-4 py-2">{withdrawal.walletNo}</td>
                     <td className="px-4 py-2">{withdrawal.type}</td>
                     <td className="px-4 py-2">{withdrawal.bankName || "N/A"}</td>
-                    
                     <td className="px-4 py-2">{withdrawal.accountNo || "N/A"}</td>
                     <td className="px-4 py-2">{withdrawal.ifscCode || "N/A"}</td>
                     <td className="px-4 py-2">{withdrawal.cardHolderName || "N/A"}</td>
@@ -125,19 +125,19 @@ const PendingWithdrawalsTable = () => {
                       {new Date(withdrawal.date).toLocaleString()}
                     </td>
                     <td className="px-4 py-2 flex items-center justify-center gap-2">
-                        <button
-                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs md:text-sm"
-                          onClick={() => handleApprove(withdrawal.id)}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="bg-red hover:bg-darkRed text-white px-2 py-1 rounded text-xs md:text-sm"
-                          onClick={() => handleReject(withdrawal.id)}
-                        >
-                          Reject
-                        </button>
-                      </td>
+                      <button
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs md:text-sm"
+                        onClick={() => handleApprove(withdrawal.id)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="bg-red hover:bg-darkRed text-white px-2 py-1 rounded text-xs md:text-sm"
+                        onClick={() => handleReject(withdrawal.id)}
+                      >
+                        Reject
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -147,7 +147,7 @@ const PendingWithdrawalsTable = () => {
         <ToastContainer />
       </div>
     </AdminNavbar>
-    </div>
+  </div>  
   );
 };
 

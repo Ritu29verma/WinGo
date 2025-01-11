@@ -8,9 +8,11 @@ import PurchasedAmount from "./models/PurchaseAmount.js";
 export let userSockets = new Map();
 export let io;
 const updatePurchasedAmount = async (amount) => {
-  const currentDate = new Date().setHours(0, 0, 0, 0);
-
   try {
+    // Get the current date and set time to 00:00:00.000
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
     // Check if a document exists for the current date
     let purchasedAmountDoc = await PurchasedAmount.findOne({ date: currentDate });
 
@@ -30,6 +32,8 @@ const updatePurchasedAmount = async (amount) => {
     console.error("Error updating purchased amount:", error);
   }
 };
+
+
 
 const stats = {
   numbers: Array(10).fill(0),

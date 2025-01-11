@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header"
 import { IoArrowBackCircleOutline } from "react-icons/io5";
-
+import Loader from "../components/Loader";
 const WithdrawalHistory = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,11 @@ const WithdrawalHistory = () => {
   }, [walletNo]);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading withdrawal history...</p>;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-500">
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {

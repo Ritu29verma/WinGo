@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
+import Loader from "../components/Loader";
 const RechargeTransactionsTable = () => {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ const RechargeTransactionsTable = () => {
 
       const data = await response.json();
       toast.success(data.message || "Transaction rejected successfully.");
-      fetchTransactions(); // Refresh transactions
+      fetchTransactions(); 
     } catch (error) {
       toast.error(error.message || "An error occurred while rejecting.");
     }
@@ -93,10 +93,14 @@ const RechargeTransactionsTable = () => {
 
   return (
     <AdminNavbar>
+    <div className="relative">
+      {/* Content */}
       <div className="p-5 bg-gray-700 h-screen">
         <h2 className="text-2xl font-bold mb-5 text-center text-gray-100">Pending Recharge Requests</h2>
         {isLoading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+            <Loader />
+          </div>
         ) : transactions.length === 0 ? (
           <p className="text-center text-gray-500">No pending transactions found.</p>
         ) : (
@@ -144,9 +148,11 @@ const RechargeTransactionsTable = () => {
             </table>
           </div>
         )}
-        <ToastContainer />
       </div>
-    </AdminNavbar>
+      <ToastContainer />
+    </div>
+  </AdminNavbar>
+  
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
+import Loader from "../components/Loader";
 
 const ProtectedRoute = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(null);
@@ -32,8 +33,12 @@ const ProtectedRoute = ({ children }) => {
 
   // Show loading or spinner while verifying admin status
   if (isAdmin === null) {
-    return <div>Loading...</div>;
-  }
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-700">
+        <Loader />
+      </div>
+    );
+  }  
 
   // Redirect to "/" if the user is not an admin
   return isAdmin ? children : <Navigate to="/" />;

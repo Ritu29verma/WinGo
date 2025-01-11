@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import socket from "../socket";
+import Loader from "../components/Loader";
 
 const AdminSuggestions = () => {
   const [suggestions, setSuggestions] = useState(null);
@@ -42,7 +43,7 @@ const AdminSuggestions = () => {
           </div>
         </div>
       ) : (
-        <p className="text-center text-gray-300">Loading suggestions...</p>
+        <p className="text-center bg-gray-800"><Loader/></p>
       )}
     </div>
   );

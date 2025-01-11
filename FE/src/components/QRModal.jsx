@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css'; // Import styles
+import 'react-toastify/dist/ReactToastify.css'; 
+import Loader from "../components/Loader";
 
 
 const QRModal = ({ isOpen, onClose, channel, depositAmount, walletDetails, setDepositAmount }) => {
   const [utrNumber, setUtrNumber] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Add a loading state
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleDeposit = async () => {
     if (!utrNumber) {
@@ -20,13 +21,13 @@ const QRModal = ({ isOpen, onClose, channel, depositAmount, walletDetails, setDe
         return;
       }
 
-      setIsLoading(true); // Show loading indicator
+      setIsLoading(true); 
 
       const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/recharge`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Add Content-Type header
-          Authorization: `${token}`, // Format Authorization header correctly
+          "Content-Type": "application/json", 
+          Authorization: `${token}`, 
         },
         body: JSON.stringify({
           utr: utrNumber,
@@ -41,18 +42,18 @@ const QRModal = ({ isOpen, onClose, channel, depositAmount, walletDetails, setDe
         toast.success("Recharge request sent successfully.");
         
         setTimeout(() => {
-            setUtrNumber(""); // Reset UTR input
-            setDepositAmount(""); // Reset deposit amount
-            onClose(); // Close the modal after the toast is shown
+            setUtrNumber("");
+            setDepositAmount(""); 
+            onClose();
           }, 1500);
       } else {
-        const errorData = await response.json(); // Parse error response
+        const errorData = await response.json(); 
         throw new Error(errorData.error || "Failed to submit the deposit. Please try again.");
       }
     } catch (error) {
       toast.error(error.message || "An error occurred. Please try again.");
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false); 
     }
   };
 
@@ -116,7 +117,7 @@ const QRModal = ({ isOpen, onClose, channel, depositAmount, walletDetails, setDe
           </button>
           <button
             onClick={handleDeposit}
-            disabled={isLoading} // Disable button during loading
+            disabled={isLoading}
             className={`${
               isLoading
                 ? "bg-gray-500 cursor-not-allowed"

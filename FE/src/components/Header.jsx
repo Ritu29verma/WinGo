@@ -22,7 +22,7 @@ function Header({ isRegister, isLogin, isWingo, isLogout }) {
         });
 
         setIsAuthenticated(true);
-        setIsAuthorized(response.data.isAuthenticated); // Assumes the backend sends `isAuthenticated`
+        setIsAuthorized(response.data.isAuthenticated); 
       } catch (error) {
         console.error("Authentication failed:", error);
         setIsAuthenticated(false);
@@ -38,7 +38,7 @@ function Header({ isRegister, isLogin, isWingo, isLogout }) {
     localStorage.removeItem("user_id");
     setIsAuthenticated(false);
     setIsAuthorized(false);
-    window.location.href = "https://goldencma.com/logout";
+    window.location.href = "https://goldencma.com/user-lucky";
   };
 
   return (
@@ -63,7 +63,7 @@ function Header({ isRegister, isLogin, isWingo, isLogout }) {
                     onClick={handleLogout}
                     className="bg-blue-500 text-white px-4 py-1 rounded"
                   >
-                    Logout
+                    Go To Home
                   </button>
                 )}
               </>

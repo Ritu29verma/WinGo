@@ -38,7 +38,7 @@ const WalletSection = ({ token }) => {
         headers: { Authorization: `${token}` },
       });
       setWalletDetails(response.data);
-      setError(null); // Clear any previous error
+      setError(null); 
     } catch (err) {
       console.error("Error fetching wallet details:", err);
       setError("Failed to fetch wallet details");
@@ -100,12 +100,10 @@ const WalletSection = ({ token }) => {
       }
       
     };
-  
-    // Listen for wallet updates after placing a bet
     socket.on("walletUpdate", handleWalletUpdate);
   
     return () => {
-      socket.off("walletUpdate", handleWalletUpdate); // Cleanup on unmount
+      socket.off("walletUpdate", handleWalletUpdate); 
     };
   }, []);
 
