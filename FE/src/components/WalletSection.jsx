@@ -8,6 +8,21 @@ const WalletSection = ({ token }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const syncWallets = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/sync-wallets`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Sync Wallets Response:", response.data);
+    } catch (error) {
+      console.error("Error syncing wallets:", error.response?.data || error.message);
+    }
+  };
 
   const fetchWalletDetails = async () => {
     const token = localStorage.getItem("token");
@@ -33,7 +48,8 @@ const WalletSection = ({ token }) => {
   };
   useEffect(() => {
     const handleBetResult = (data) => {
-      fetchWalletDetails()
+      fetchWalletDetails();
+      syncWallets();
     };
   
     socket.on("betResults", handleBetResult);
@@ -46,6 +62,7 @@ const WalletSection = ({ token }) => {
   // Initial fetch of wallet details
   useEffect(() => {
     fetchWalletDetails();
+    syncWallets();
   }, []);
   useEffect(() => {
     const handleWalletUpdated = (data) => {
@@ -54,7 +71,9 @@ const WalletSection = ({ token }) => {
           ...prev,
           totalAmount: data.totalAmount,
         }));
+        syncWallets();
       }
+      
     };
 
     socket.on("walletUpdated", handleWalletUpdated);
@@ -77,7 +96,9 @@ const WalletSection = ({ token }) => {
       console.log("Wallet updated:", data);
       if (data.walletDetails) {
         setWalletDetails(data.walletDetails);
+        syncWallets();
       }
+      
     };
   
     // Listen for wallet updates after placing a bet
