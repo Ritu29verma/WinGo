@@ -163,3 +163,80 @@ export const checkClient = async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+
+
+export const syncWalletByCode = async (req, res) => {
+  const { code } = req.query;
+
+  if (!code) {
+    return res.status(400).json({ error: "Code is required" });
+  }
+
+  if (!req.mysqlPool) {
+    return res.status(500).json({ error: "MySQL connection pool not initialized" });
+  }
+
+  try {
+    // Find the user in MongoDB by code
+    const user = await User.findOne({ code });
+    if (!user) {
+      return res.status(404).json({ error: "User not found in MongoDB" });
+    }
+
+    // Find the wallet in MongoDB
+    const wallet = await Wallet.findOne({ userId: user._id });
+    if (!wallet) {
+      return res.status(404).json({ error: "Wallet not found for the user" });
+    }
+
+    // Query the client table in MySQL
+    const [clientResults] = await req.mysqlPool.query(
+      "SELECT * FROM client WHERE code = ? AND password = ?",
+      [user.code, user.password]
+    );
+
+    if (clientResults.length === 0) {
+      return res.status(404).json({ error: "Client not found in MySQL" });
+    }
+
+    const client = clientResults[0];
+
+    // Compare updatedAt fields
+    const walletUpdatedAt = new Date(wallet.updatedAt);
+    const clientUpdatedAt = new Date(client.updated_at);
+
+    if (clientUpdatedAt > walletUpdatedAt) {
+      // Update MongoDB wallet totalAmount
+      wallet.totalAmount = parseFloat(client.matkaLimit || 0);
+      wallet.updatedAt = clientUpdatedAt;
+      await wallet.save();
+
+      return res.status(200).json({
+        message: "MongoDB wallet updated successfully",
+        wallet,
+      });
+    } else if (walletUpdatedAt > clientUpdatedAt) {
+      // Update MySQL client matkaLimit and updated_at
+      await req.mysqlPool.query(
+        "UPDATE client SET matkaLimit = ?, updated_at = ? WHERE id = ?",
+        [wallet.totalAmount.toString(), walletUpdatedAt, client.Id]
+      );
+
+      return res.status(200).json({
+        message: "MySQL client updated successfully",
+        updatedClient: {
+          matkaLimit: wallet.totalAmount,
+          updatedAt: walletUpdatedAt,
+        },
+      });
+    } else {
+      return res.status(200).json({
+        message: "No updates required. Both systems are synchronized.",
+      });
+    }
+  } catch (error) {
+    console.error("Error processing wallet synchronization by code:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
