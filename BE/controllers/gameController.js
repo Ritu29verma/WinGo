@@ -143,7 +143,7 @@ export const UserGameResults = async (req, res) => {
   
 
 
-  export const getUserGameDatabyCodes = async (req, res) => {
+export const getUserGameDatabyCodes = async (req, res) => {
     try {
       const { codes, fromDate, toDate } = req.body;
   

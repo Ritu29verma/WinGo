@@ -48,8 +48,9 @@ const WalletSection = ({ token }) => {
   };
   useEffect(() => {
     const handleBetResult = (data) => {
-      fetchWalletDetails();
       syncWallets();
+      fetchWalletDetails();
+
     };
   
     socket.on("betResults", handleBetResult);
@@ -61,8 +62,9 @@ const WalletSection = ({ token }) => {
 
   // Initial fetch of wallet details
   useEffect(() => {
-    fetchWalletDetails();
     syncWallets();
+    fetchWalletDetails();
+
   }, []);
   useEffect(() => {
     const handleWalletUpdated = (data) => {
