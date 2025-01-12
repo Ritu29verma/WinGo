@@ -126,7 +126,7 @@ const WalletSection = ({ token }) => {
   return (
     <div className="bg-customBlue w-full max-w-7xl rounded-lg p-6 mb-4 shadow-lg m-3">
       <div>
-        <div className="flex flex-col md:flex-row justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-center items-center">
           <div className="mb-4 md:mb-0">
             
             <p className="text-lg font-semibold text-white">Wallet Balance</p>
@@ -143,7 +143,7 @@ const WalletSection = ({ token }) => {
               {walletDetails.walletNo}
             </p>
           </div>
-          <div className="flex space-x-2">
+          {/* <div className="flex space-x-2">
             <button
               className="bg-red hover:bg-orange-900 text-white px-4 py-2 rounded-lg"
               onClick={handleDeposit}
@@ -156,7 +156,7 @@ const WalletSection = ({ token }) => {
             >
               Withdraw
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

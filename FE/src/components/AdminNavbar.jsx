@@ -19,7 +19,8 @@ const AdminNavbar = ({ children, logout }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("admin_id");
-    navigate("/admin/login");
+    // navigate("/admin/login");
+    window.location.href="https://goldencma.com"
   };
 
   return (
