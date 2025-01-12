@@ -489,9 +489,9 @@ export const AdminGameResults = async (req, res) => {
       .sort({ time: -1 }) // Sort by most recent first
       .populate("userid", "phoneNo"); // Populate phoneNo from user document
 
-    if (!gameResults.length) {
-      return res.status(404).json({ message: "No game results found for the specified date range." });
-    }
+      if (!gameResults.length) {
+        return res.json([]); // Return an empty array if no results are found
+      }
 
     res.json(gameResults);
   } catch (error) {
@@ -534,9 +534,9 @@ export const getPurchasedAmount = async (req, res) => {
 
     // Check if any records were found
     if (!purchasedAmounts.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No purchased amounts found for the specified date range.",
+      return res.json({
+        success: true,
+        totalAmount: 0, // Return 0 if no records are found
       });
     }
 

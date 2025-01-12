@@ -47,7 +47,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             Bets Data
           </Link>
         </li>
-        <li>
+        {/* <li>
           <Link
             to="/admin/pendingrecharge"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
@@ -90,7 +90,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
           >
             Payment Manage
           </Link>
-        </li>
+        </li> */}
 
       </ul>
     </div>

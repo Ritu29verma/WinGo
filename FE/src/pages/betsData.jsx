@@ -6,9 +6,10 @@ import { toast } from 'react-toastify';
 import Loader from "../components/Loader";
 
 const BetsData = () => {
+  const today = moment().format('YYYY-MM-DD');
   const [betsData, setBetsData] = useState([]);
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [fromDate, setFromDate] = useState(today);
+  const [toDate, setToDate] = useState(today);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedRows, setExpandedRows] = useState([]);
@@ -20,10 +21,10 @@ const BetsData = () => {
         `${import.meta.env.VITE_BASE_URL}/admin/total-purchased-amount`,
         { params: { fromDate, toDate } }
       );
-      setTotalAmount(response.data.totalAmount);
+      setTotalAmount(response.data.totalAmount || 0); // Default to 0 if totalAmount is undefined
     } catch (error) {
       console.error("Error fetching total purchased amount:", error);
-      setTotalAmount(0);
+      setTotalAmount(0); // Set to 0 in case of error
     }
   };
 
@@ -34,15 +35,15 @@ const BetsData = () => {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin/betsData`, {
         params: { fromDate, toDate },
       });
-      setBetsData(response.data);
+      setBetsData(response.data || []); // Default to an empty array if no data
     } catch (err) {
-      setError("Failed to fetch data");
-      toast.error("An error occurred while fetching game results.");
+      console.error("Error fetching bets data:", err);
+      setError(""); // Do not set an error message for display
+      setBetsData([]); // Default to an empty array in case of error
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const today = moment().format('YYYY-MM-DD');
     fetchBetsData(today, today);
