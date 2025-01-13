@@ -7,7 +7,7 @@ export const getGameLogs = async (req, res) => {
   try {
     const games = await Game.find()
       .sort({ timestamp: -1 }) // Sort in descending order by timestamp
-      .limit(80); // Limit the results to the top 80
+      .limit(50); // Limit the results to the top 80
     res.status(200).json(games);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch game logs" });
@@ -235,5 +235,37 @@ export const getUserGameDatabyCodes = async (req, res) => {
       });
     }
   };
+  
+  export const deleteGameLogs = async (req, res) => {
+    try {
+      const { quantity } = req.body;
+      let deleteCount;
+  
+      if (quantity === 'all') {
+        deleteCount = await Game.deleteMany({});
+      } else {
+        const numQuantity = parseInt(quantity, 10);
+  
+        // Find logs in ascending order (oldest first) and limit to the specified quantity
+        const logsToDelete = await Game.find().sort({ timestamp: 1 }).limit(numQuantity); // Sorting by ascending order
+        const idsToDelete = logsToDelete.map(log => log._id);
+  
+        // Check if the number of logs found matches the requested quantity
+        if (idsToDelete.length === numQuantity) {
+          await Game.deleteMany({ _id: { $in: idsToDelete } });
+          deleteCount = idsToDelete.length;
+        } else {
+          // In case fewer logs are found than requested, delete what is found
+          await Game.deleteMany({ _id: { $in: idsToDelete } });
+          deleteCount = idsToDelete.length;
+        }
+      }
+  
+      res.status(200).json({ message: `Deleted ${deleteCount} logs successfully` });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete game logs" });
+    }
+  };
+  
   
   

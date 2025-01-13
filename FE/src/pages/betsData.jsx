@@ -71,7 +71,7 @@ const BetsData = () => {
     <AdminNavbar>
     <div className="bg-gray-700 text-white min-h-screen p-6 space-y-10 relative">
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+        <div className="inset-0 flex items-center justify-center bg-gray-700">
           <Loader />
         </div>
       )}

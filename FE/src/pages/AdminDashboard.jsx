@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 import socket from "../socket";
 import UserStats from "./AdminUsers";
+import axios from "axios";
 import AdminSuggestions from "../components/Betting";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminDashboard = ({ isSidebarOpen }) => {
   const [remainingTime, setRemainingTime] = useState(null);
@@ -13,12 +16,38 @@ const AdminDashboard = ({ isSidebarOpen }) => {
   const [currentGameId, setCurrentGameId] = useState(null);
   const [manualNumber, setManualNumber] = useState("");
   const [adminSelectedGameData, setAdminSelectedGameData] = useState(null);
+  const [quantity, setQuantity] = useState('20');
+  const [showDropdown, setShowDropdown] = useState(false);
 
-
+  const handleDelete = async () => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/game/delete-game-logs`, { quantity });
+      if (response.status === 200) {
+        toast.success('Logs deleted successfully');
+      } else {
+        toast.error('Unexpected response from server');
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error('Response error:', error.response.data);
+        toast.error('Failed to delete game logs: ' + error.response.data.error);
+      } else if (error.request) {
+        console.error('Request error:', error.request);
+        toast.error('No response from server');
+      } else {
+        console.error('Error', error.message);
+        toast.error('Error: ' + error.message);
+      }
+    } finally {
+      setShowDropdown(false); // Close the dropdown after the toast message
+    }
+  };
   
-  useEffect(() => {
-    
-    
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  useEffect(() => {  
     const fetchGameLogs = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`);
@@ -45,7 +74,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
     });
     socket.on("gameId", ({ gameId }) => {
       setCurrentGameId(gameId);
-      localStorage.setItem("nextGameId", gameId); // Save to localStorage
+      localStorage.setItem("nextGameId", gameId); 
     });
   
     // Restore the nextGameId on component load
@@ -201,34 +230,78 @@ const AdminDashboard = ({ isSidebarOpen }) => {
     
         <AdminSuggestions/>
         <UserStats/>
-        {/* Game Data Logs */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <h2 className="text-lg font-bold mb-4">Game Logs</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left text-gray-400">
-              <thead className="bg-gray-700 text-gray-200">
-                <tr>
-                  <th scope="col" className="px-4 py-2">Game ID</th>
-                  <th scope="col" className="px-4 py-2">Number</th>
-                  <th scope="col" className="px-4 py-2">Color</th>
-                  <th scope="col" className="px-4 py-2">Big/Small</th>
-                </tr>
-              </thead>
-              <tbody>
+
+   {/* Game Data Logs Section */}
+   <div className="bg-gray-800 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-gray-200">Game Logs</h2>
+          <div className="relative">
+            <button
+              onClick={toggleDropdown}
+              className="bg-orange-500 text-white py-1 px-4 rounded-lg font-bold transform transition-transform hover:scale-95"
+            >
+              Manage Game Logs
+            </button>
+            
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-lg">
+                <div className="p-4">
+                  <label htmlFor="quantity" className="block text-lg font-medium text-white mb-2">Quantity:</label>
+                  <select
+                    id="quantity"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    className="w-full border rounded p-2 text-black"
+                  >
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="all">All</option>
+                  </select>
+                  <div className="flex justify-between mt-4 space-x-2">
+                    <button
+                      onClick={handleDelete}
+                      className="bg-red text-white py-2 px-4 rounded hover:bg-darkRed"
+                    >
+                      Delete Logs
+                    </button>
+                    <button
+                      onClick={toggleDropdown}
+                      className="bg-gray-600 text-white py-2 px-4 rounded hover:bg-orange-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Table of Game Logs */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left text-gray-400">
+            <thead className="bg-gray-700 text-gray-200">
+              <tr>
+                <th scope="col" className="px-4 py-2">Game ID</th>
+                <th scope="col" className="px-4 py-2">Number</th>
+                <th scope="col" className="px-4 py-2">Color</th>
+                <th scope="col" className="px-4 py-2">Big/Small</th>
+              </tr>
+            </thead>
+            <tbody>
               {gameData.map((game, index) => (
                 <tr key={index} className="bg-gray-700 text-gray-200">
                   <td className="px-4 py-2">{game.gameId}</td>
                   <td className="px-4 py-2">{game.number}</td>
                   <td className="px-4 py-2">{game.color.join(", ")}</td>
                   <td className="px-4 py-2">{game.bigOrSmall}</td>
-                  {/* <td className="px-4 py-2">{game.duration}</td>
-                  <td className="px-4 py-2">{new Date(game.timestamp).toLocaleString()}</td> */}
                 </tr>
               ))}
             </tbody>
-            </table>
-          </div>
+          </table>
         </div>
+      </div>
 
       </div>
     </AdminNavbar>
