@@ -7,6 +7,14 @@ import Wallet from "./models/Wallet.js"
 import PurchasedAmount from "./models/PurchaseAmount.js";
 export let userSockets = new Map();
 export let io;
+let nextGameId = null;
+let timer = null;
+let timerDuration = 0;
+let isTimerActive = false;
+let currentGameId = null;
+let adminSelectedGameData = null;
+
+
 const updatePurchasedAmount = async (amount) => {
   try {
     // Get the current date and set time to 00:00:00.000
@@ -98,12 +106,40 @@ const setManualGameData = (io, data) => {
   io.emit("adminSelectedGameData", adminSelectedGameData);
 };
 
-let nextGameId = null;
-let timer = null;
-let timerDuration = 0;
-let isTimerActive = false;
-let currentGameId = null;
-let adminSelectedGameData = null;
+
+const setManualGameDataforSuggestions = (io, data) => {
+
+  if (data.type === 'number') {
+    adminSelectedGameData = {
+      number: data.value,
+      color: getColor(data.value),
+      bigOrSmall: getBigOrSmall(data.value),
+    };
+  } else if (data.type === 'color') {
+    // Select the first number corresponding to the suggested color
+    const colorNumbers = data.value === 'GREEN' ? [1, 3, 7, 9] :
+                         data.value === 'RED' ? [2, 4, 6, 8] :
+                         data.value === 'VIOLET' ? [0, 5] : [];
+    const selectedNumber = colorNumbers[Math.floor(Math.random() * colorNumbers.length)];
+    adminSelectedGameData = {
+      number: selectedNumber,
+      color: getColor(selectedNumber),
+      bigOrSmall: getBigOrSmall(selectedNumber),
+    };
+  } else if (data.type === 'size') {
+    const sizeNumber = data.value === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5); // Random number based on size
+    adminSelectedGameData = {
+      number: sizeNumber,
+      color: getColor(sizeNumber),
+      bigOrSmall: getBigOrSmall(sizeNumber),
+    };
+  }
+
+  io.emit("adminSelectedGameData", adminSelectedGameData);
+};
+
+
+
 
 // Utility Functions
 const generateGameId = () => {
@@ -368,7 +404,10 @@ export const initializeSocket = (server) => {
       }
     });
   
-    
+    socket.on("setBetFromSuggestion", (data, callback) => {
+      setManualGameDataforSuggestions(io, data);
+      callback({ success: true });
+    });
 
     socket.on("setManualGameData", (data, callback) => {
       if (data.number >= 0 && data.number <= 9) {

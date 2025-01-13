@@ -221,7 +221,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
           <div className="text-gold">
             Number: {adminSelectedGameData.number}, 
             Color: {adminSelectedGameData.color.join(", ")}, 
-            Big/Small: {adminSelectedGameData.bigOrSmall}
+            Size: {adminSelectedGameData.bigOrSmall}
           </div>
         </div>
         )}
