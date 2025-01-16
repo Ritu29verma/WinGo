@@ -152,7 +152,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
         {/* Stop Timer Button */}
         <button
           onClick={stopTimer}
-          className="bg-red-500 rounded-lg p-4 text-center font-bold"
+          className="bg-red rounded-lg p-4 text-center font-bold"
         >
           Stop Timer
         </button>

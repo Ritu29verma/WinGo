@@ -7,7 +7,7 @@ import AdminSuggestions2 from "../components/Betting2";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const AdminDashboard2 = ({ isSidebarOpen }) => {
+const AdminDashboard4 = ({ isSidebarOpen }) => {
   const [remainingTime, setRemainingTime] = useState(null);
   const [gameData, setGameData] = useState([]);
   const [timerStatus, setTimerStatus] = useState(false);
@@ -308,4 +308,4 @@ const AdminDashboard2 = ({ isSidebarOpen }) => {
   );
 };
 
-export default AdminDashboard2;
+export default AdminDashboard4;
