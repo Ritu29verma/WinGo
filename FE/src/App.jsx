@@ -25,6 +25,7 @@ import UserGameHistory from './components/UserGameHistory';
 import BetsData from './pages/betsData';
 import LoginWingo from './pages/LoginGoldenCMA';
 import Loader from './components/Loader';
+import AdminDashboard2 from './pages/AdminDashboard2';
 function App() {
 
   return (
@@ -38,6 +39,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/dashboard2"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard2 />
               </ProtectedRoute>
             }
           />
