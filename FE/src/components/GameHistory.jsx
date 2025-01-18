@@ -2,27 +2,115 @@ import React, { useState, useEffect } from "react";
 import socket from "../socket";
 import axios from "axios";
 
-const GameHistory = () => {
+const GameHistory = ({ selectedTime }) => {
   const [gameResults, setGameResults] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
-  const [myBets, setMyBets] = useState([]);
+  const [myBets30, setMyBets30] = useState([]);
+  const [myBets60, setMyBets60] = useState([]);
+  const [myBets180, setMyBets180] = useState([]);
+  const [myBets300, setMyBets300] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("game");
   const [gameData, setGameData] = useState([]);
 
+  const getEventName = (time) => {
+    switch (time) {
+      case 30:
+        return "userBetsUpdate";
+      case 60:
+        return "userBetsUpdate2";
+      case 180:
+        return "userBetsUpdate3";
+      case 300:
+        return "userBetsUpdate4";
+      default:
+        return null; // No event to listen for invalid times
+    }
+  };
+
+  const getBetsSetter = (time) => {
+    switch (time) {
+      case 30:
+        return setMyBets30;
+      case 60:
+        return setMyBets60;
+      case 180:
+        return setMyBets180;
+      case 300:
+        return setMyBets300;
+      default:
+        return null;
+    }
+  };
 
   useEffect(() => {
+    const eventName = getEventName(selectedTime);
+    const betsSetter = getBetsSetter(selectedTime);
+
     const handleUserBetsUpdate = (userBets) => {
-      setMyBets(userBets || []); // Fallback to empty array if null or undefined
+      if (betsSetter) betsSetter(userBets || []);
     };
-  
-    socket.on("userBetsUpdate", handleUserBetsUpdate);
-  
+
+    if (eventName) {
+      socket.on(eventName, handleUserBetsUpdate);
+    }
+
     return () => {
-      socket.off("userBetsUpdate", handleUserBetsUpdate);
+      if (eventName) {
+        socket.off(eventName, handleUserBetsUpdate);
+      }
     };
-  }, []);
+  }, [selectedTime, socket]);
+
+const renderBets = () => {
+    let currentBets = [];
+    switch (selectedTime) {
+      case 30:
+        currentBets = myBets30;
+        break;
+      case 60:
+        currentBets = myBets60;
+        break;
+      case 180:
+        currentBets = myBets180;
+        break;
+      case 300:
+        currentBets = myBets300;
+        break;
+      default:
+        break;
+    }
+
+    if (currentBets.length === 0) {
+      return <p>No Bets yet...</p>;
+    }
+
+    return (
+      <ul className="space-y-3">
+        {currentBets.map((bet, index) => (
+          <li key={index} className="bg-customBlue p-3 rounded-lg">
+            <div className="flex justify-between mb-1">
+              <p className="text-gray-400">Selected:</p>
+              <p className="text-white">{bet.content}</p>
+            </div>
+            <div className="flex justify-between mb-1">
+              <p className="text-gray-400">Purchase Amount:</p>
+              <p className="text-white">₹{bet.purchaseAmount}</p>
+            </div>
+            <div className="flex justify-between mb-1">
+              <p className="text-gray-400">Timestamp:</p>
+              <p className="text-white">
+                {new Date(bet.timestamp).toLocaleString()}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+
 
   const fetchGameResults = async () => {
     const token = localStorage.getItem("token");
@@ -31,8 +119,28 @@ const GameHistory = () => {
       setLoading(false);
       return;
     }
+
+    let apiUrl;
+    switch (selectedTime) {
+      case 30:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getGameResults`;
+        break;
+      case 60:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getGameResults2`;
+        break;
+      case 180:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getGameResults3`;
+        break;
+      case 300:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getGameResults4`;
+        break;
+      default:
+        console.error("Invalid selectedTime");
+        return;
+    }
+
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/game/getGameResults`, {
+      const response = await axios.get(apiUrl, {
         headers: { Authorization: token },
       });
       setGameResults(response.data);
@@ -44,19 +152,43 @@ const GameHistory = () => {
     }
   };
 
+  useEffect(() => {
+    fetchGameResults();
+  }, [selectedTime]);
+
   const fetchGameLogs = async () => {
+    let apiUrl;
+  
+    // Determine the API endpoint based on selectedTime
+    switch (selectedTime) {
+      case 30:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getlogs`;
+        break;
+      case 60:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getlogs2`;
+        break;
+      case 180:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getlogs3`;
+        break;
+      case 300:
+        apiUrl = `${import.meta.env.VITE_BASE_URL}/game/getlogs4`;
+        break;
+      default:
+        console.error("Invalid selected time:", selectedTime);
+        return;
+    }
+  
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`);
+      const response = await fetch(apiUrl);
       const data = await response.json();
       setGameData(data);
     } catch (error) {
       console.error("Failed to fetch game logs:", error);
     }
   };
+  
 
-  useEffect(() => {
-    fetchGameResults();
-  }, []);
+
 
   useEffect(() => {
     if (activeTab === "Game History") {
@@ -64,12 +196,35 @@ const GameHistory = () => {
       const handleGameData = (data) => {
         setGameData((prev) => [data, ...prev]);
       };
-      socket.on("gameData", handleGameData);
+  
+      let eventName = "";
+      switch (selectedTime) {
+        case 30:
+          eventName = "gameData";
+          break;
+        case 60:
+          eventName = "gameData2";
+          break;
+        case 180:
+          eventName = "gameData3";
+          break;
+        case 300:
+          eventName = "gameData4";
+          break;
+        default:
+          console.error("Invalid selectedTime");
+          return;
+      }
+  
+      socket.on(eventName, handleGameData);
+  
       return () => {
-        socket.off("gameData", handleGameData);
+        socket.off(eventName, handleGameData);
       };
+  
     }
-  }, [activeTab]);
+  }, [activeTab, selectedTime]);
+  
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -88,13 +243,32 @@ const GameHistory = () => {
     const handleBetResult = (data) => {
       fetchGameResults();
     };
-  
-    socket.on("betResults", handleBetResult);
-  
+
+    let eventName = "";
+    switch (selectedTime) {
+      case 30:
+        eventName = "betResults";
+        break;
+      case 60:
+        eventName = "betResults2";
+        break;
+      case 180:
+        eventName = "betResults3";
+        break;
+      case 300:
+        eventName = "betResults4";
+        break;
+      default:
+        console.error("Invalid selectedTime");
+        return;
+    }
+
+    socket.on(eventName, handleBetResult);
+
     return () => {
-      socket.off("betResults", handleBetResult);
+      socket.off(eventName, handleBetResult);
     };
-  }, []);
+  }, [selectedTime]);
   
 
   return (
@@ -154,32 +328,11 @@ const GameHistory = () => {
           </div>
         )}
         {activeTab === "My Bets" && (
-          <div className="bg-gray-800 rounded-lg p-4 mx-auto">
-            <h2 className="text-lg font-bold mb-4">My Bets</h2>
-            {myBets.length === 0 ? (
-              <p>No Bets yet...</p>
-            ) : (
-              <ul className="space-y-3">
-                {myBets.map((bet, index) => (
-                  <li key={index} className="bg-customBlue p-3 rounded-lg">
-                    <div className="flex justify-between mb-1">
-                    <p className="text-gray-400">Selected:</p>
-                    <p className="text-white">{bet.content}</p>
-                    </div>
-                    <div className="flex justify-between mb-1">
-                    <p className="text-gray-400">Purchase Amount:</p>
-                    <p className="text-white">₹{bet.purchaseAmount}</p>
-                    </div>
-                    <div className="flex justify-between mb-1">
-                    <p className="text-gray-400">Timestamp:</p>
-                    <p className="text-white">{new Date(bet.timestamp).toLocaleString()}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        <div className="bg-gray-800 rounded-lg p-4 mx-auto">
+          <h2 className="text-lg font-bold mb-4">My Bets</h2>
+          {renderBets()}
+        </div>
+      )}
         {activeTab === "My History" && (
           <div className="bg-gray-800 rounded-lg p-4 mx-auto">
             <h1 className="text-lg font-bold mb-4">My Game History</h1>

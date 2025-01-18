@@ -3,12 +3,11 @@ import socket from "../socket";
 import Loader from "../components/Loader";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-const AdminSuggestions = () => {
+const AdminSuggestions4 = () => {
   const [suggestions, setSuggestions] = useState(null);
-  const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0, isTimerActive: false });
 
   const handleSetBet = (type, value) => {
-    socket.emit("setBetFromSuggestion", { type, value }, (response) => {
+    socket.emit("setBetFromSuggestion4", { type, value }, (response) => {
       if (response.success) {
         toast.success("Bet set successfully");
       } else {
@@ -17,50 +16,12 @@ const AdminSuggestions = () => {
     });
   };
   useEffect(() => {
-    socket.on("suggestions", (data) => {
+    socket.on("suggestions4", (data) => {
         setSuggestions(data.suggestions);
       });
-      socket.on("timerUpdate", ({ minutes, seconds, isTimerActive }) => {
-        setTimeLeft({ minutes, seconds, isTimerActive });
-      });
-  
-      return () => {
-        socket.off("suggestions");
-        socket.off("timerUpdate");
-      };
+
+    return () => socket.off("suggestions4");
   }, []);
-  useEffect(() => {
-    if (
-      timeLeft.isTimerActive &&
-      Number(timeLeft.minutes) === 0 && // Convert to number for comparison
-      Number(timeLeft.seconds) === 5 && // Convert to number for comparison
-      suggestions
-    ) {
-      // Create an array of bets
-      const bets = [
-        { type: "number", value: suggestions.minNumberBet.value, key: suggestions.minNumberBet.index },
-        { type: "color", value: suggestions.minColorBet.value, key: suggestions.minColorBet.key },
-        { type: "size", value: suggestions.minSizeBet.value, key: suggestions.minSizeBet.key },
-      ];
-  
-      // Find the minimum value among bets
-      const minBet = bets.reduce((min, bet) => {
-        if (bet.value < min.value) return bet;
-        if (bet.value === min.value && bet.type === "number") return bet; // Prioritize "number"
-        return min;
-      }, bets[0]);
-  
-      console.log(minBet.type, minBet.key);
-  
-      // Emit the event to set the bet automatically
-      socket.emit("setBetFromSuggestion", { type: minBet.type, value: minBet.key }, (response) => {
-        if (!response.success) {
-          console.error("Error setting bet:", response.message);
-        }
-      });
-    }
-  }, [timeLeft, suggestions]);
-  
 
   return (
     <div className="bg-gray-800 p-8 rounded-lg border-2 border-orange-500 ">
@@ -108,4 +69,4 @@ const AdminSuggestions = () => {
   
 };
 
-export default AdminSuggestions;
+export default AdminSuggestions4;

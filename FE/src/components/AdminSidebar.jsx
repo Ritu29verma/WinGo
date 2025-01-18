@@ -27,7 +27,32 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             to="/admin/dashboard"
             className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
           >
-            Dashboard
+            30 sec Game
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to="/admin/dashboard2"
+            className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
+          >
+            60 sec Game
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/admin/dashboard3"
+            className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
+          >
+            3 min Game
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/admin/dashboard4"
+            className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
+          >
+            5 min Game
           </Link>
         </li>
 

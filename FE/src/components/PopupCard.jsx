@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import socket from "../socket";
 
-const PopupCard = ({ isOpen, onClose, content, color }) => {
+const PopupCard = ({ isOpen, onClose, content, color, selectedTime }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedBalance, setSelectedBalance] = useState(null);
   const [selectedMultiplier, setSelectedMultiplier] = useState(null); 
@@ -33,15 +33,36 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
   const handlePlaceBet = () => {
     const userId = localStorage.getItem("user_id");
     const data = { userId, content, purchaseAmount: quantity };
-
-    socket.emit("userBet", data, (response) => {
+  
+    // Determine the event name based on the selectedTime
+    let eventName;
+    switch (selectedTime) {
+      case 30:
+        eventName = "userBet";
+        break;
+      case 60:
+        eventName = "userBet2";
+        break;
+      case 180:
+        eventName = "userBet3";
+        break;
+      case 300:
+        eventName = "userBet4";
+        break;
+      default:
+        toast.error("Invalid time selected");
+        return;
+    }
+  
+    // Emit the corresponding event
+    socket.emit(eventName, data, (response) => {
       if (response.success) {
         toast.success("Bet placed successfully");
       } else {
-        toast.error("Failed to place bet", response.message);
+        toast.error(`Failed to place bet: ${response.message}`);
       }
     });
-
+  
     onClose();
   };
 
@@ -68,7 +89,7 @@ const PopupCard = ({ isOpen, onClose, content, color }) => {
                : { backgroundColor: color }
            }
          >
-           <h2 className="font-bold text-2xl sm:text-xl">WinGo 30s</h2>
+           <h2 className="font-bold text-2xl sm:text-xl">WinGo {selectedTime}s</h2>
            <div className="mt-4">
              <div className="w-5/6 mx-auto px-3 py-3 bg-white text-black text-center rounded-lg">
                SELECT {content}
