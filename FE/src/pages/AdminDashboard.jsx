@@ -18,6 +18,25 @@ const AdminDashboard = ({ isSidebarOpen }) => {
   const [adminSelectedGameData, setAdminSelectedGameData] = useState(null);
   const [quantity, setQuantity] = useState('20');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [logsCount, setLogsCount] = useState("");
+
+  useEffect(() => {
+    if (showDropdown) {
+      const fetchLogsCount = async () => {
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/game/getgamecount`);
+          if (response.data.success) {
+            setLogsCount(response.data.totalCount);
+          } else {
+            console.error("Failed to fetch logs count");
+          }
+        } catch (error) {
+          console.error("Error fetching logs count:", error);
+        }
+      };
+      fetchLogsCount();
+    }
+  }, [showDropdown]);
 
   const handleDelete = async () => {
     try {
@@ -122,40 +141,42 @@ const AdminDashboard = ({ isSidebarOpen }) => {
     <AdminNavbar>
       <div className="bg-gray-700 text-white min-h-screen p-6 space-y-6">
         {/* Timer Controls */}
-        <div className="grid gap-4 grid-cols-4">
+        <div className="flex items-center justify-center ">
           <button
-            onClick={() => startTimer(30000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
+
+            className="bg-orange-500 rounded-lg p-2 px-8 text-center font-bold "
           >
             30S Timer
           </button>
+        </div>
+        <div className="flex justify-between items-center space-x-4">
+          {/* Stop Timer Button */}
           <button
-            onClick={() => startTimer(60000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
+            onClick={stopTimer}
+            className="bg-red text-white rounded-lg p-1 md:p-4 font-bold transform transition-transform hover:scale-95"
           >
-            1M Timer
+            Stop Timer
           </button>
+
+          {/* Admin Selected Game Data */}
+          {adminSelectedGameData && (
+            <div className="text-center text-bold">
+              <div className="text-gold">
+                <span>Number: {adminSelectedGameData.number},</span>
+                <span> Color: {adminSelectedGameData.color.join(", ")},</span>
+                <span> Size: {adminSelectedGameData.bigOrSmall}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Start Timer Button */}
           <button
-            onClick={() => startTimer(180000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
+            onClick={() => startTimer(30000)}
+            className="bg-green-700 text-white rounded-lg p-1 md:p-4 font-bold transform transition-transform hover:scale-95"
           >
-            3M Timer
-          </button>
-          <button
-            onClick={() => startTimer(300000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
-          >
-            5M Timer
+            Start Timer
           </button>
         </div>
-
-        {/* Stop Timer Button */}
-        <button
-          onClick={stopTimer}
-          className="bg-red rounded-lg p-4 text-center font-bold"
-        >
-          Stop Timer
-        </button>
 
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
@@ -216,15 +237,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
           >
             Submit
           </button>
-          {adminSelectedGameData && (
-          <div className="mt-4 text-bold ">
-          <div className="text-gold">
-            Number: {adminSelectedGameData.number}, 
-            Color: {adminSelectedGameData.color.join(", ")}, 
-            Size: {adminSelectedGameData.bigOrSmall}
-          </div>
-        </div>
-        )}
+          
         </div>
      </div>
     
@@ -258,6 +271,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
                     <option value="100">100</option>
                     <option value="all">All</option>
                   </select>
+                  <p className="text-white mt-2">Current Logs: {logsCount || "..."}</p>
                   <div className="flex justify-between mt-4 space-x-2">
                     <button
                       onClick={handleDelete}

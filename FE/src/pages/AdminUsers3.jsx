@@ -17,12 +17,12 @@ const UserStats3 = () => {
 
 
   useEffect(() => {
-    socket.on("bettingStats", (updatedStats) => {
+    socket.on("bettingStats3", (updatedStats) => {
       setStats(updatedStats);
     });
 
     return () => {
-      socket.off("bettingStats");
+      socket.off("bettingStats3");
     };
   }, []);
 

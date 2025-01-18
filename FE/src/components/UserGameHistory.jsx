@@ -49,12 +49,13 @@ const UserGameHistory = () => {
               <tr>
                 <th className="px-4 py-2">Period Number</th>
                 <th className="px-4 py-2">Purchase Amount</th>
-                <th className="px-4 py-2">Amount After Tax</th>
-                <th className="px-4 py-2">Tax</th>
+                <th className="px-4 py-2">TimeSlot</th>
+                
                 <th className="px-4 py-2">Result</th>
                 <th className="px-4 py-2">Select</th>
                 <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Win/Loss</th>
+                <th className="px-4 py-2">Tax</th>
+                <th className="px-4 py-2">Amount After Tax</th>
                 <th className="px-4 py-2">Time</th>
               </tr>
             </thead>
@@ -64,8 +65,8 @@ const UserGameHistory = () => {
                   <tr key={index} className="bg-gray-900 border-t border-gray-600">
                     <td className="px-4 py-2">{data.periodNumber}</td>
                     <td className="px-4 py-2">₹{data.purchaseAmount}</td>
-                    <td className="px-4 py-2">₹{data.amountAfterTax}</td>
-                    <td className="px-4 py-2">₹{data.tax}</td>
+                    <td className="px-4 py-2">{data.duration}</td>
+                    
                     <td className="px-4 py-2">{data.result}</td>
                     <td className="px-4 py-2">{data.select}</td>
                     <td className="px-4 py-2">
@@ -79,7 +80,8 @@ const UserGameHistory = () => {
                         </button>
                       )}
                     </td>
-                    <td className="px-4 py-2">{data.winLoss}</td>
+                    <td className="px-4 py-2">₹{data.tax}</td>
+                    <td className="px-4 py-2">₹{data.amountAfterTax}</td>
                     <td className="px-4 py-2">{new Date(data.time).toLocaleString()}</td>
                   </tr>
                 ))

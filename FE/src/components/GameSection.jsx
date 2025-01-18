@@ -12,7 +12,7 @@ import nine from "../assets/9.png";
 import PopupCard from "./PopupCard";
 // import WinOrLoss from "./WinOrLoss";
 
-const GameSection = () => {
+const GameSection = ({ selectedTime }) => {
   const [popup, setPopup] = useState({ isOpen: false, color: "", content: "" });
 
   const colors = ["green", "violet", "red" ];
@@ -131,16 +131,10 @@ const GameSection = () => {
         onClose={closePopup}
         content={popup.content}
         color={popup.color}
+        selectedTime={selectedTime}
         className="z-10"
       />
 
-      {/* <WinOrLoss
-        isWin={isWin}
-        lotteryResult={{ color: "Red", number: 7, size: "Small" }}
-        bonus={100}
-        period={5656}
-        autoClose={true}
-      /> */}
     </div>
         </div>
   );

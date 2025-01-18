@@ -18,10 +18,29 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
   const [adminSelectedGameData, setAdminSelectedGameData] = useState(null);
   const [quantity, setQuantity] = useState('20');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [logsCount, setLogsCount] = useState("");
+
+  useEffect(() => {
+    if (showDropdown) {
+      const fetchLogsCount = async () => {
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/game/getgamecount3`);
+          if (response.data.success) {
+            setLogsCount(response.data.totalCount);
+          } else {
+            console.error("Failed to fetch logs count");
+          }
+        } catch (error) {
+          console.error("Error fetching logs count:", error);
+        }
+      };
+      fetchLogsCount();
+    }
+  }, [showDropdown]);
 
   const handleDelete = async () => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/game/delete-game-logs`, { quantity });
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/game/delete-game-logs3`, { quantity });
       if (response.status === 200) {
         toast.success('Logs deleted successfully');
       } else {
@@ -50,7 +69,7 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
   useEffect(() => {  
     const fetchGameLogs = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs`);
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/game/getlogs3`);
         const data = await response.json();
         setGameData(data);
       } catch (error) {
@@ -60,39 +79,39 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
   
     fetchGameLogs();
   
-    socket.on("gameData", (data) => {
+    socket.on("gameData3", (data) => {
       setGameData((prev) => [data, ...prev]);
     });
 
-    socket.on("timerUpdate", ({ minutes, seconds, isTimerActive }) => {
+    socket.on("timerUpdate3", ({ minutes, seconds, isTimerActive3 }) => {
       setMinutes(minutes);
       setSeconds(seconds);
-      setTimerStatus(isTimerActive);
+      setTimerStatus(isTimerActive3);
     });
 
-    socket.on("adminSelectedGameData", (data) => {
+    socket.on("adminSelectedGameData3", (data) => {
       setAdminSelectedGameData(data);
     });
 
-    socket.on("gameId", ({ gameId }) => {
+    socket.on("gameId3", ({ gameId }) => {
       setCurrentGameId(gameId);
-      localStorage.setItem("nextGameId", gameId);
+      localStorage.setItem("nextGameId3", gameId);
     });
 
-    const storedGameId = localStorage.getItem("nextGameId");
+    const storedGameId = localStorage.getItem("nextGameId3");
     if (storedGameId) setCurrentGameId(storedGameId);
 
     return () => {
-      socket.off("gameData");
-      socket.off("timerUpdate");
-      socket.off("gameId");
-      socket.off("adminSelectedGameData");
+      socket.off("gameData3");
+      socket.off("timerUpdate3");
+      socket.off("gameId3");
+      socket.off("adminSelectedGameData3");
     };
   }, []);
 
   const setManualGameData = () => {
     if (manualNumber >= 0 && manualNumber <= 9) {
-      socket.emit("setManualGameData", { number: manualNumber }, (response) => {
+      socket.emit("setManualGameData3", { number: manualNumber }, (response) => {
         if (response.success) {
           console.log("Manual game data set:", response.gameData);
         }
@@ -102,7 +121,7 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
   };
 
   const startTimer = (durationMs) => {
-    socket.emit("startTimer", durationMs, (response) => {
+    socket.emit("startTimer3", durationMs, (response) => {
       if (response.success) {
         console.log("Timer started");
       }
@@ -110,7 +129,7 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
   };
 
   const stopTimer = () => {
-    socket.emit("stopTimer", (response) => {
+    socket.emit("stopTimer3", (response) => {
       if (response.success) {
         console.log("Timer stopped");
         setRemainingTime(null);
@@ -123,40 +142,45 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
     <AdminNavbar>
       <div className="bg-gray-700 text-white min-h-screen p-6 space-y-6">
         {/* Timer Controls */}
-        <div className="grid gap-4 grid-cols-4">
+        <div className="flex items-center justify-center ">
+          
           <button
-            onClick={() => startTimer(30000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
-          >
-            30S Timer
-          </button>
-          <button
-            onClick={() => startTimer(60000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
-          >
-            1M Timer
-          </button>
-          <button
-            onClick={() => startTimer(180000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
+            className="bg-orange-500 rounded-lg p-2 px-8 text-center font-bold "
           >
             3M Timer
           </button>
+
+        </div>
+
+
+        <div className="flex justify-between items-center space-x-4">
+          {/* Stop Timer Button */}
           <button
-            onClick={() => startTimer(300000)}
-            className="bg-orange-500 rounded-lg p-2 text-center font-bold transform transition-transform hover:scale-95"
+            onClick={stopTimer}
+            className="bg-red text-white rounded-lg p-1 md:p-4 font-bold transform transition-transform hover:scale-95"
           >
-            5M Timer
+            Stop Timer
+          </button>
+
+          {/* Admin Selected Game Data */}
+          {adminSelectedGameData && (
+          <div className="mt-4 text-bold ">
+          <div className="text-gold">
+            Number: {adminSelectedGameData.number}, 
+            Color: {adminSelectedGameData.color.join(", ")}, 
+            Size: {adminSelectedGameData.bigOrSmall}
+          </div>
+        </div>
+        )}
+
+          {/* Start Timer Button */}
+          <button
+            onClick={() => startTimer(180000)}
+            className="bg-green-700 text-white rounded-lg p-1 md:p-4 font-bold transform transition-transform hover:scale-95"
+          >
+            Start Timer
           </button>
         </div>
-     
-
-        <button
-          onClick={stopTimer}
-          className="bg-red rounded-lg p-4 text-center font-bold"
-        >
-          Stop Timer
-        </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
           <div className="bg-gray-800 rounded-lg p-4 text-center">
@@ -213,15 +237,7 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
             >
               Submit
             </button>
-            {adminSelectedGameData && (
-              <div className="mt-4 text-bold">
-                <div className="text-gold">
-                  Number: {adminSelectedGameData.number}, 
-                  Color: {adminSelectedGameData.color.join(", ")}, 
-                  Size: {adminSelectedGameData.bigOrSmall}
-                </div>
-              </div>
-            )}
+            
           </div>
         </div>
 
@@ -253,10 +269,12 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
                       <option value="100">100</option>
                       <option value="all">All</option>
                     </select>
+                  <p className="text-white mt-2">Current Logs: {logsCount || "..."}</p>
+
                     <div className="flex justify-between mt-4 space-x-2">
                       <button
                         onClick={handleDelete}
-                        className="bg-red-500 text-white py-2 px-4 rounded hover:bg-darkRed"
+                        className="bg-red text-white py-2 px-4 rounded hover:bg-darkRed"
                       >
                         Delete Logs
                       </button>

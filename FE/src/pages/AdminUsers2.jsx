@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import socket from "../socket";
 
 const UserStats2 = () => {
-  const [stats, setStats] = useState({
+  const [stats2, setStats2] = useState({
     numbers: Array(10).fill(0),
     colors: { RED: 0, GREEN: 0, VIOLET: 0 },
     size: { Big: 0, Small: 0 },
@@ -17,12 +17,12 @@ const UserStats2 = () => {
 
 
   useEffect(() => {
-    socket.on("bettingStats", (updatedStats) => {
-      setStats(updatedStats);
+    socket.on("bettingStats2", (updatedStats) => {
+      setStats2(updatedStats);
     });
 
     return () => {
-      socket.off("bettingStats");
+      socket.off("bettingStats2");
     };
   }, []);
 
@@ -33,17 +33,17 @@ const UserStats2 = () => {
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
       <div className="p-4 rounded-lg shadow-lg text-center bg-indigo-600">
         <h2 className="text-xl font-semibold">Total Game Amount</h2>
-        <p className="text-gold text-2xl font-bold">{stats.totalGameAmount}/-</p>
+        <p className="text-gold text-2xl font-bold">{stats2.totalGameAmount}/-</p>
       </div>
         {/* Unique Users Playing */}
         <div className="p-4 rounded-lg shadow-lg text-center bg-teal-600">
         <h2 className="text-xl font-semibold">Users Playing Currently</h2>
-        <p className="text-white text-2xl font-bold">{stats.uniqueUsersCount} Users</p>
+        <p className="text-white text-2xl font-bold">{stats2.uniqueUsersCount} Users</p>
       </div>
       </div>
       {/* Color Stats */}
       <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6">
-        {Object.entries(stats.colors).map(([color, count]) => (
+        {Object.entries(stats2.colors).map(([color, count]) => (
           <div
             key={color}
             className={`p-4 rounded-lg shadow-lg text-center ${
@@ -54,10 +54,10 @@ const UserStats2 = () => {
             <p>{count} Bets</p>
             <p
               className={`${
-                stats.totalAmount.colors[color] > 0 ? "text-gold" : ""
+                stats2.totalAmount.colors[color] > 0 ? "text-gold" : ""
               }`}
             >
-              {stats.totalAmount.colors[color]}/-
+              {stats2.totalAmount.colors[color]}/-
             </p>
           </div>
         ))}
@@ -65,16 +65,16 @@ const UserStats2 = () => {
 
       {/* Number Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-6">
-        {stats.numbers.map((count, index) => (
+        {stats2.numbers.map((count, index) => (
           <div key={index} className="bg-gray-800 p-2  rounded-lg shadow-lg text-center">
             <h2 className="text-sm md:text-xl font-semibold">Number {index}</h2>
             <p>{count} Bets</p>
             <p
               className={`${
-                stats.totalAmount.numbers[index] > 0 ? "text-gold" : ""
+                stats2.totalAmount.numbers[index] > 0 ? "text-gold" : ""
               }`}
             >
-              {stats.totalAmount.numbers[index]}/-
+              {stats2.totalAmount.numbers[index]}/-
             </p>
           </div>
         ))}
@@ -82,7 +82,7 @@ const UserStats2 = () => {
 
       {/* Size Stats */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {Object.entries(stats.size).map(([size, count]) => (
+        {Object.entries(stats2.size).map(([size, count]) => (
           <div
             key={size}
             className={`p-4 rounded-lg shadow-lg text-center ${
@@ -93,10 +93,10 @@ const UserStats2 = () => {
             <p>{count} Bets</p>
             <p
               className={`${
-                stats.totalAmount.size[size] > 0 ? "text-gold" : ""
+                stats2.totalAmount.size[size] > 0 ? "text-gold" : ""
               }`}
             >
-              {stats.totalAmount.size[size]}/-
+              {stats2.totalAmount.size[size]}/-
             </p>
           </div>
         ))}

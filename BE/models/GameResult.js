@@ -39,6 +39,11 @@ const GameResultSchema = new mongoose.Schema({
     type: Number, // Represents the win/loss amount
     required: true,
   },
+  duration: {
+    type: String,
+    required: true,
+    enum: ["30s", "60s", "180s", "300s"], // Restrict values
+  },
   time: {
     type: Date,
     default: Date.now,

@@ -7,7 +7,7 @@ const AdminSuggestions3 = () => {
   const [suggestions, setSuggestions] = useState(null);
 
   const handleSetBet = (type, value) => {
-    socket.emit("setBetFromSuggestion", { type, value }, (response) => {
+    socket.emit("setBetFromSuggestion3", { type, value }, (response) => {
       if (response.success) {
         toast.success("Bet set successfully");
       } else {
@@ -16,11 +16,11 @@ const AdminSuggestions3 = () => {
     });
   };
   useEffect(() => {
-    socket.on("suggestions", (data) => {
+    socket.on("suggestions3", (data) => {
         setSuggestions(data.suggestions);
       });
 
-    return () => socket.off("suggestions");
+    return () => socket.off("suggestions3");
   }, []);
 
   return (
