@@ -29,37 +29,37 @@ const AdminSuggestions = () => {
         socket.off("timerUpdate");
       };
   }, []);
-  useEffect(() => {
-    if (
-      timeLeft.isTimerActive &&
-      Number(timeLeft.minutes) === 0 && // Convert to number for comparison
-      Number(timeLeft.seconds) === 5 && // Convert to number for comparison
-      suggestions
-    ) {
-      // Create an array of bets
-      const bets = [
-        { type: "number", value: suggestions.minNumberBet.value, key: suggestions.minNumberBet.index },
-        { type: "color", value: suggestions.minColorBet.value, key: suggestions.minColorBet.key },
-        { type: "size", value: suggestions.minSizeBet.value, key: suggestions.minSizeBet.key },
-      ];
+  // useEffect(() => {
+  //   if (
+  //     timeLeft.isTimerActive &&
+  //     Number(timeLeft.minutes) === 0 && // Convert to number for comparison
+  //     Number(timeLeft.seconds) === 5 && // Convert to number for comparison
+  //     suggestions
+  //   ) {
+  //     // Create an array of bets
+  //     const bets = [
+  //       { type: "number", value: suggestions.minNumberBet.value, key: suggestions.minNumberBet.index },
+  //       { type: "color", value: suggestions.minColorBet.value, key: suggestions.minColorBet.key },
+  //       { type: "size", value: suggestions.minSizeBet.value, key: suggestions.minSizeBet.key },
+  //     ];
   
-      // Find the minimum value among bets
-      const minBet = bets.reduce((min, bet) => {
-        if (bet.value < min.value) return bet;
-        if (bet.value === min.value && bet.type === "number") return bet; // Prioritize "number"
-        return min;
-      }, bets[0]);
+  //     // Find the minimum value among bets
+  //     const minBet = bets.reduce((min, bet) => {
+  //       if (bet.value < min.value) return bet;
+  //       if (bet.value === min.value && bet.type === "number") return bet; // Prioritize "number"
+  //       return min;
+  //     }, bets[0]);
   
-      console.log(minBet.type, minBet.key);
+  //     console.log(minBet.type, minBet.key);
   
-      // Emit the event to set the bet automatically
-      socket.emit("setBetFromSuggestion", { type: minBet.type, value: minBet.key }, (response) => {
-        if (!response.success) {
-          console.error("Error setting bet:", response.message);
-        }
-      });
-    }
-  }, [timeLeft, suggestions]);
+  //     // Emit the event to set the bet automatically
+  //     socket.emit("setBetFromSuggestion", { type: minBet.type, value: minBet.key }, (response) => {
+  //       if (!response.success) {
+  //         console.error("Error setting bet:", response.message);
+  //       }
+  //     });
+  //   }
+  // }, [timeLeft, suggestions]);
   
 
   return (
