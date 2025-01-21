@@ -505,13 +505,67 @@ const fetchGameData4 = () => {
 const startRepeatingTimer = (io, durationMs) => {
   timerDuration = durationMs / 1000;
   isTimerActive = true;
-
+  let gameData;
   if (timer) clearInterval(timer);
 
   nextGameId = generateGameId();
   io.emit("gameId", { gameId: nextGameId });
 
   timer = setInterval(async () => {
+
+    if (timerDuration === 5) {
+      // Set game data when 5 seconds are left
+      currentGameId = nextGameId;
+      if (adminSelectedGameData) {
+        gameData = { gameId: currentGameId, ...adminSelectedGameData };
+        adminSelectedGameData = null;
+        io.emit("adminSelectedGameData", adminSelectedGameData);
+      } else {
+        const suggestions = getMinimumBetsAndUsers();
+        const suggestionMap = [
+          { type: "number", value: suggestions.minNumberBet.value, key: suggestions.minNumberBet.index },
+          { type: "color", value: suggestions.minColorBet.value, key: suggestions.minColorBet.key },
+          { type: "size", value: suggestions.minSizeBet.value, key: suggestions.minSizeBet.key },
+        ];
+
+        const minBet = suggestionMap.reduce((min, suggestion) => {
+          if (suggestion.value < min.value) return suggestion;
+          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
+          return min;
+        }, suggestionMap[0]);
+
+        if (minBet.type === 'number') {
+          gameData = {
+            gameId: currentGameId,
+            number: minBet.key,
+            color: getColor(minBet.key),
+            bigOrSmall: getBigOrSmall(minBet.key),
+          };
+        } else if (minBet.type === 'color') {
+          const colorNumbers = minBet.key === 'GREEN' ? [1, 3, 7, 9] :
+                               minBet.key === 'RED' ? [2, 4, 6, 8] :
+                               minBet.key === 'VIOLET' ? [0, 5] : [];
+          const selectedNumber = colorNumbers[Math.floor(Math.random() * colorNumbers.length)];
+          gameData = {
+            gameId: currentGameId,
+            number: selectedNumber,
+            color: getColor(selectedNumber),
+            bigOrSmall: getBigOrSmall(selectedNumber),
+          };
+        } else if (minBet.type === 'size') {
+          const sizeNumber = minBet.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
+          gameData = {
+            gameId: currentGameId,
+            number: sizeNumber,
+            color: getColor(sizeNumber),
+            bigOrSmall: getBigOrSmall(sizeNumber),
+          };
+        }
+      }
+
+      // Emit game data
+      io.emit("adminSelectedGameData", gameData);
+    }
     if (timerDuration <= 0) {
       Object.keys(stats.colors).forEach((key) => (stats.colors[key] = 0));
       Object.keys(stats.size).forEach((key) => (stats.size[key] = 0));
@@ -523,19 +577,9 @@ const startRepeatingTimer = (io, durationMs) => {
       stats.totalGameAmount = 0;
       stats.uniqueUsers.clear();
       timerDuration = durationMs / 1000;
-    
-      currentGameId = nextGameId;
+
       nextGameId = generateGameId();
       io.emit("gameId", { gameId: nextGameId });
-    
-      let gameData;
-      if (adminSelectedGameData) {
-        gameData = { gameId: currentGameId, ...adminSelectedGameData };
-        adminSelectedGameData = null;
-        io.emit("adminSelectedGameData", adminSelectedGameData);
-      } else {
-        gameData = fetchGameData();
-      }
     
       const gameDocument = new Game({
         ...gameData,
@@ -544,6 +588,9 @@ const startRepeatingTimer = (io, durationMs) => {
       await gameDocument.save();
     
       io.emit("gameData", gameData);
+      
+      io.emit("adminSelectedGameData", null);
+
  
       // Check user bets
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
@@ -663,6 +710,7 @@ const startRepeatingTimer = (io, durationMs) => {
 const startRepeatingTimer2 = (io, durationMs) => {
   timerDuration2 = durationMs / 1000;
   isTimerActive2 = true;
+  let gameData2;
 
   if (timer2) clearInterval(timer2);
 
@@ -670,6 +718,60 @@ const startRepeatingTimer2 = (io, durationMs) => {
   io.emit("gameId2", { gameId: nextGameId2 });
 
   timer2 = setInterval(async () => {
+    if (timerDuration2 === 5) {
+      // Set game data when 5 seconds are left
+      currentGameId2 = nextGameId2;
+      if (adminSelectedGameData2) {
+        gameData2 = { gameId: currentGameId2, ...adminSelectedGameData2 };
+        adminSelectedGameData2 = null;
+        io.emit("adminSelectedGameData2", adminSelectedGameData2);
+      } else {
+        const suggestions2 = getMinimumBetsAndUsers2();
+        const suggestionMap2 = [
+          { type: "number", value: suggestions2.minNumberBet.value, key: suggestions2.minNumberBet.index },
+          { type: "color", value: suggestions2.minColorBet.value, key: suggestions2.minColorBet.key },
+          { type: "size", value: suggestions2.minSizeBet.value, key: suggestions2.minSizeBet.key },
+        ];
+
+        const minBet2 = suggestionMap2.reduce((min, suggestion) => {
+          if (suggestion.value < min.value) return suggestion;
+          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
+          return min;
+        }, suggestionMap2[0]);
+
+        if (minBet2.type === 'number') {
+          gameData2 = {
+            gameId: currentGameId2,
+            number: minBet2.key,
+            color: getColor(minBet2.key),
+            bigOrSmall: getBigOrSmall(minBet2.key),
+          };
+
+        } else if (minBet2.type === 'color') {
+          const colorNumbers2 = minBet2.key === 'GREEN' ? [1, 3, 7, 9] :
+                               minBet2.key === 'RED' ? [2, 4, 6, 8] :
+                               minBet2.key === 'VIOLET' ? [0, 5] : [];
+          const selectedNumber2 = colorNumbers2[Math.floor(Math.random() * colorNumbers2.length)];
+          gameData2 = {
+            gameId: currentGameId2,
+            number: selectedNumber2,
+            color: getColor(selectedNumber2),
+            bigOrSmall: getBigOrSmall(selectedNumber2),
+          };
+        } else if (minBet2.type === 'size') {
+          const sizeNumber2 = minBet2.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
+          gameData2 = {
+            gameId: currentGameId2,
+            number: sizeNumber2,
+            color: getColor(sizeNumber2),
+            bigOrSmall: getBigOrSmall(sizeNumber2),
+          };
+        }
+      }
+
+      // Emit game data
+      io.emit("adminSelectedGameData2", gameData2);
+    }
     if (timerDuration2 <= 0) {
       Object.keys(stats2.colors).forEach((key) => (stats2.colors[key] = 0));
       Object.keys(stats2.size).forEach((key) => (stats2.size[key] = 0));
@@ -682,19 +784,9 @@ const startRepeatingTimer2 = (io, durationMs) => {
       stats2.uniqueUsers.clear();
       timerDuration2 = durationMs / 1000;
     
-      currentGameId2 = nextGameId2;
       nextGameId2 = generateGameId();
       io.emit("gameId2", { gameId: nextGameId2 });
-    
-      let gameData2;
-      if (adminSelectedGameData2) {
-        gameData2 = { gameId: currentGameId2, ...adminSelectedGameData2 };
-        adminSelectedGameData2 = null;
-        io.emit("adminSelectedGameData2", adminSelectedGameData2);
-      } else {
-        gameData2 = fetchGameData2();
-      }
-    
+
       const gameDocument = new Game2({
         ...gameData2,
         duration: `${durationMs / 1000}s`,
@@ -702,7 +794,8 @@ const startRepeatingTimer2 = (io, durationMs) => {
       await gameDocument.save();
     
       io.emit("gameData2", gameData2);
- 
+      io.emit("adminSelectedGameData2", null);
+
       // Check user bets
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
         const userBets2 = socket.userBets2;
@@ -820,6 +913,7 @@ const startRepeatingTimer2 = (io, durationMs) => {
 const startRepeatingTimer3 = (io, durationMs) => {
   timerDuration3 = durationMs / 1000;
   isTimerActive3 = true;
+  let gameData3;
 
   if (timer3) clearInterval(timer3);
 
@@ -827,6 +921,60 @@ const startRepeatingTimer3 = (io, durationMs) => {
   io.emit("gameId3", { gameId: nextGameId3 });
 
   timer3 = setInterval(async () => {
+    if (timerDuration3 === 5) {
+      // Set game data when 5 seconds are left
+      currentGameId3 = nextGameId3;
+      if (adminSelectedGameData3) {
+        gameData3 = { gameId: currentGameId3, ...adminSelectedGameData3 };
+        adminSelectedGameData3 = null;
+        io.emit("adminSelectedGameData3", adminSelectedGameData3);
+      } else {
+        const suggestions3 = getMinimumBetsAndUsers3();
+        const suggestionMap3 = [
+          { type: "number", value: suggestions3.minNumberBet.value, key: suggestions3.minNumberBet.index },
+          { type: "color", value: suggestions3.minColorBet.value, key: suggestions3.minColorBet.key },
+          { type: "size", value: suggestions3.minSizeBet.value, key: suggestions3.minSizeBet.key },
+        ];
+
+        const minBet3 = suggestionMap3.reduce((min, suggestion) => {
+          if (suggestion.value < min.value) return suggestion;
+          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
+          return min;
+        }, suggestionMap3[0]);
+
+        if (minBet3.type === 'number') {
+          gameData3 = {
+            gameId: currentGameId3,
+            number: minBet3.key,
+            color: getColor(minBet3.key),
+            bigOrSmall: getBigOrSmall(minBet3.key),
+          };
+
+        } else if (minBet3.type === 'color') {
+          const colorNumbers3 = minBet3.key === 'GREEN' ? [1, 3, 7, 9] :
+                               minBet3.key === 'RED' ? [2, 4, 6, 8] :
+                               minBet3.key === 'VIOLET' ? [0, 5] : [];
+          const selectedNumber3 = colorNumbers3[Math.floor(Math.random() * colorNumbers3.length)];
+          gameData3 = {
+            gameId: currentGameId3,
+            number: selectedNumber3,
+            color: getColor(selectedNumber3),
+            bigOrSmall: getBigOrSmall(selectedNumber3),
+          };
+        } else if (minBet3.type === 'size') {
+          const sizeNumber3 = minBet3.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
+          gameData3 = {
+            gameId: currentGameId3,
+            number: sizeNumber3,
+            color: getColor(sizeNumber3),
+            bigOrSmall: getBigOrSmall(sizeNumber3),
+          };
+        }
+      }
+
+      // Emit game data
+      io.emit("adminSelectedGameData3", gameData3);
+    }
     if (timerDuration3 <= 0) {
       Object.keys(stats3.colors).forEach((key) => (stats3.colors[key] = 0));
       Object.keys(stats3.size).forEach((key) => (stats3.size[key] = 0));
@@ -839,19 +987,9 @@ const startRepeatingTimer3 = (io, durationMs) => {
       stats3.uniqueUsers.clear();
       timerDuration3 = durationMs / 1000;
     
-      currentGameId3 = nextGameId3;
       nextGameId3 = generateGameId();
       io.emit("gameId3", { gameId: nextGameId3 });
-    
-      let gameData3;
-      if (adminSelectedGameData3) {
-        gameData3 = { gameId: currentGameId3, ...adminSelectedGameData3 };
-        adminSelectedGameData3 = null;
-        io.emit("adminSelectedGameData3", adminSelectedGameData3);
-      } else {
-        gameData3 = fetchGameData3();
-      }
-    
+
       const gameDocument = new Game3({
         ...gameData3,
         duration: `${durationMs / 1000}s`,
@@ -859,7 +997,9 @@ const startRepeatingTimer3 = (io, durationMs) => {
       await gameDocument.save();
     
       io.emit("gameData3", gameData3);
- 
+      io.emit("adminSelectedGameData3", null);
+
+      // Check user bets
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
         const userBets3 = socket.userBets3;
         if (userBets3 && userBets3.length > 0) {
@@ -867,6 +1007,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
           for (const bet3 of userBets3) {
             const { userId, content, purchaseAmount } = bet3;
       
+            // Determine win condition
             const isWin =
               content == gameData3.number ||
               gameData3.color.includes(content.toUpperCase()) ||
@@ -875,20 +1016,27 @@ const startRepeatingTimer3 = (io, durationMs) => {
             const taxRate = 0.02;
             let winAmount = 0;
       
+            // Calculate win amount based on content type
             if (!isNaN(content) && [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(Number(content))) {
+             
               winAmount = purchaseAmount * 9 ;
+            
             } else if (
               content.toLowerCase() === "big" ||
               content.toLowerCase() === "small" ||
               gameData3.color.includes(content.toUpperCase())
             ) {
+              // Content is big, small, or a color
               winAmount = purchaseAmount * 2 ;
             }
       
+            // If lose, calculate loss amount
             const lossAmount = purchaseAmount * (1 - taxRate);
+      
             const result = gameData3.number;
             const winLossDisplay = isWin ? winAmount * (1 - taxRate) : -lossAmount;
       
+            // Save game result
             const gameResult = new GameResult({
               userid: userId,
               periodNumber: currentGameId3,
@@ -901,8 +1049,9 @@ const startRepeatingTimer3 = (io, durationMs) => {
               winLoss: winLossDisplay,
               duration:"180s"
             });
-            await gameResult.save();
+            await gameResult.save(x);
       
+            // Update wallet
             const wallet = await Wallet.findOne({ userId });
             if (wallet) {
               if (isWin) {
@@ -923,6 +1072,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
               await user.save();
             }
 
+      
             betResults3.push({
               success: isWin,
               amount: winLossDisplay,
@@ -935,7 +1085,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
             });
           }
           io.to(socketId).emit("betResults3", betResults3);
-          socket.userBets3 = [];
+          socket.userBets3 = []; // Reset userBets to an empty array
           socket.emit("userBetsUpdate3", socket.userBets3);
         }
       }
@@ -957,7 +1107,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
     });
     io.emit("bettingStats3", {
       ...stats3,
-      uniqueUsersCount: stats3.uniqueUsers.size,
+      uniqueUsersCount: stats3.uniqueUsers.size, // Send count of unique users
     });
   }, 1000);
 };
@@ -966,6 +1116,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
 const startRepeatingTimer4 = (io, durationMs) => {
   timerDuration4 = durationMs / 1000;
   isTimerActive4 = true;
+  let gameData4;
 
   if (timer4) clearInterval(timer4);
 
@@ -973,6 +1124,60 @@ const startRepeatingTimer4 = (io, durationMs) => {
   io.emit("gameId4", { gameId: nextGameId4 });
 
   timer4 = setInterval(async () => {
+    if (timerDuration4 === 5) {
+      // Set game data when 5 seconds are left
+      currentGameId4 = nextGameId4;
+      if (adminSelectedGameData4) {
+        gameData4 = { gameId: currentGameId4, ...adminSelectedGameData4 };
+        adminSelectedGameData4 = null;
+        io.emit("adminSelectedGameData4", adminSelectedGameData4);
+      } else {
+        const suggestions4 = getMinimumBetsAndUsers4();
+        const suggestionMap4 = [
+          { type: "number", value: suggestions4.minNumberBet.value, key: suggestions4.minNumberBet.index },
+          { type: "color", value: suggestions4.minColorBet.value, key: suggestions4.minColorBet.key },
+          { type: "size", value: suggestions4.minSizeBet.value, key: suggestions4.minSizeBet.key },
+        ];
+
+        const minBet4 = suggestionMap4.reduce((min, suggestion) => {
+          if (suggestion.value < min.value) return suggestion;
+          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
+          return min;
+        }, suggestionMap4[0]);
+
+        if (minBet4.type === 'number') {
+          gameData4 = {
+            gameId: currentGameId4,
+            number: minBet4.key,
+            color: getColor(minBet4.key),
+            bigOrSmall: getBigOrSmall(minBet4.key),
+          };
+
+        } else if (minBet4.type === 'color') {
+          const colorNumbers4 = minBet4.key === 'GREEN' ? [1, 3, 7, 9] :
+                               minBet4.key === 'RED' ? [2, 4, 6, 8] :
+                               minBet4.key === 'VIOLET' ? [0, 5] : [];
+          const selectedNumber4 = colorNumbers4[Math.floor(Math.random() * colorNumbers4.length)];
+          gameData4 = {
+            gameId: currentGameId4,
+            number: selectedNumber4,
+            color: getColor(selectedNumber4),
+            bigOrSmall: getBigOrSmall(selectedNumber4),
+          };
+        } else if (minBet4.type === 'size') {
+          const sizeNumber4 = minBet4.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
+          gameData4 = {
+            gameId: currentGameId4,
+            number: sizeNumber4,
+            color: getColor(sizeNumber4),
+            bigOrSmall: getBigOrSmall(sizeNumber4),
+          };
+        }
+      }
+
+      // Emit game data
+      io.emit("adminSelectedGameData4", gameData4);
+    }
     if (timerDuration4 <= 0) {
       Object.keys(stats4.colors).forEach((key) => (stats4.colors[key] = 0));
       Object.keys(stats4.size).forEach((key) => (stats4.size[key] = 0));
@@ -985,19 +1190,9 @@ const startRepeatingTimer4 = (io, durationMs) => {
       stats4.uniqueUsers.clear();
       timerDuration4 = durationMs / 1000;
     
-      currentGameId4 = nextGameId4;
       nextGameId4 = generateGameId();
       io.emit("gameId4", { gameId: nextGameId4 });
-    
-      let gameData4;
-      if (adminSelectedGameData4) {
-        gameData4 = { gameId: currentGameId4, ...adminSelectedGameData4 };
-        adminSelectedGameData4 = null;
-        io.emit("adminSelectedGameData4", adminSelectedGameData4);
-      } else {
-        gameData4 = fetchGameData4();
-      }
-    
+
       const gameDocument = new Game4({
         ...gameData4,
         duration: `${durationMs / 1000}s`,
@@ -1005,7 +1200,8 @@ const startRepeatingTimer4 = (io, durationMs) => {
       await gameDocument.save();
     
       io.emit("gameData4", gameData4);
-   
+      io.emit("adminSelectedGameData4", null);
+
       // Check user bets
       for (const [socketId, socket] of io.sockets.sockets.entries()) {
         const userBets4 = socket.userBets4;
@@ -1118,6 +1314,7 @@ const startRepeatingTimer4 = (io, durationMs) => {
     });
   }, 1000);
 };
+
 
 
 export const initializeSocket = (server) => {
