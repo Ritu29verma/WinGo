@@ -20,6 +20,7 @@ let timerDuration = 0;
 let isTimerActive = false;
 let currentGameId = null;
 let adminSelectedGameData = null;
+let isSuggestionOn = false; 
 //for 60 sec
 let nextGameId2 = null;
 let timer2 = null;
@@ -27,6 +28,7 @@ let timerDuration2 = 0;
 let isTimerActive2 = false;
 let currentGameId2 = null;
 let adminSelectedGameData2 = null;
+let isSuggestionOn2 = false; 
 //for 180 sec
 let nextGameId3 = null;
 let timer3 = null;
@@ -34,6 +36,7 @@ let timerDuration3 = 0;
 let isTimerActive3 = false;
 let currentGameId3 = null;
 let adminSelectedGameData3 = null;
+let isSuggestionOn3 = false; 
 //for 300 sec
 let nextGameId4 = null;
 let timer4 = null;
@@ -41,6 +44,7 @@ let timerDuration4 = 0;
 let isTimerActive4 = false;
 let currentGameId4 = null;
 let adminSelectedGameData4 = null;
+let isSuggestionOn4 = false; 
 
 const updatePurchasedAmount = async (amount) => {
   try {
@@ -68,6 +72,43 @@ const updatePurchasedAmount = async (amount) => {
   }
 };
 
+function suggestNumber(stats) {
+  const payoutRatios = {
+    numbers: 9,
+    colors: 2,
+    size: 2,
+  };
+
+  let minLoss = Infinity;
+  let bestNumber = -1;
+
+  for (let number = 0; number < 10; number++) {
+    let payout = 0;
+
+    // Add bets on the specific number
+    payout += stats.totalAmount.numbers[number] * payoutRatios.numbers;
+
+    // Add bets on associated colors
+    if ([0, 5].includes(number)) payout += stats.totalAmount.colors.VIOLET * payoutRatios.colors;
+    if ([0, 2, 4, 6, 8].includes(number)) payout += stats.totalAmount.colors.RED * payoutRatios.colors;
+    if ([1, 3, 5, 7, 9].includes(number)) payout += stats.totalAmount.colors.GREEN * payoutRatios.colors;
+
+    // Add bets on associated sizes
+    if ([0, 1, 2, 3, 4].includes(number)) payout += stats.totalAmount.size.Small * payoutRatios.size;
+    if ([5, 6, 7, 8, 9].includes(number)) payout += stats.totalAmount.size.Big * payoutRatios.size;
+
+    // Calculate potential loss
+    const potentialLoss = payout - stats.totalGameAmount;
+
+    // Track the number with minimum loss
+    if (potentialLoss < minLoss) {
+      minLoss = potentialLoss;
+      bestNumber = number;
+    }
+  }
+
+  return bestNumber;
+}
 
 //for 30 sec
 const stats = {
@@ -519,51 +560,17 @@ const startRepeatingTimer = (io, durationMs) => {
       if (adminSelectedGameData) {
         gameData = { gameId: currentGameId, ...adminSelectedGameData };
         adminSelectedGameData = null;
-        io.emit("adminSelectedGameData", adminSelectedGameData);
+      } else if (isSuggestionOn) {
+        const bestNumber = suggestNumber(stats);
+        gameData = {
+          gameId: currentGameId,
+          number: bestNumber,
+          color: getColor(bestNumber),
+          bigOrSmall: getBigOrSmall(bestNumber),
+        };
       } else {
-        const suggestions = getMinimumBetsAndUsers();
-        const suggestionMap = [
-          { type: "number", value: suggestions.minNumberBet.value, key: suggestions.minNumberBet.index },
-          { type: "color", value: suggestions.minColorBet.value, key: suggestions.minColorBet.key },
-          { type: "size", value: suggestions.minSizeBet.value, key: suggestions.minSizeBet.key },
-        ];
-
-        const minBet = suggestionMap.reduce((min, suggestion) => {
-          if (suggestion.value < min.value) return suggestion;
-          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
-          return min;
-        }, suggestionMap[0]);
-
-        if (minBet.type === 'number') {
-          gameData = {
-            gameId: currentGameId,
-            number: minBet.key,
-            color: getColor(minBet.key),
-            bigOrSmall: getBigOrSmall(minBet.key),
-          };
-        } else if (minBet.type === 'color') {
-          const colorNumbers = minBet.key === 'GREEN' ? [1, 3, 7, 9] :
-                               minBet.key === 'RED' ? [2, 4, 6, 8] :
-                               minBet.key === 'VIOLET' ? [0, 5] : [];
-          const selectedNumber = colorNumbers[Math.floor(Math.random() * colorNumbers.length)];
-          gameData = {
-            gameId: currentGameId,
-            number: selectedNumber,
-            color: getColor(selectedNumber),
-            bigOrSmall: getBigOrSmall(selectedNumber),
-          };
-        } else if (minBet.type === 'size') {
-          const sizeNumber = minBet.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
-          gameData = {
-            gameId: currentGameId,
-            number: sizeNumber,
-            color: getColor(sizeNumber),
-            bigOrSmall: getBigOrSmall(sizeNumber),
-          };
-        }
+        gameData = fetchGameData();
       }
-
-      // Emit game data
       io.emit("adminSelectedGameData", gameData);
     }
     if (timerDuration <= 0) {
@@ -724,52 +731,17 @@ const startRepeatingTimer2 = (io, durationMs) => {
       if (adminSelectedGameData2) {
         gameData2 = { gameId: currentGameId2, ...adminSelectedGameData2 };
         adminSelectedGameData2 = null;
-        io.emit("adminSelectedGameData2", adminSelectedGameData2);
+      } else if (isSuggestionOn2) {
+        const bestNumber = suggestNumber(stats2);
+        gameData2 = {
+          gameId: currentGameId2,
+          number: bestNumber,
+          color: getColor(bestNumber),
+          bigOrSmall: getBigOrSmall(bestNumber),
+        };
       } else {
-        const suggestions2 = getMinimumBetsAndUsers2();
-        const suggestionMap2 = [
-          { type: "number", value: suggestions2.minNumberBet.value, key: suggestions2.minNumberBet.index },
-          { type: "color", value: suggestions2.minColorBet.value, key: suggestions2.minColorBet.key },
-          { type: "size", value: suggestions2.minSizeBet.value, key: suggestions2.minSizeBet.key },
-        ];
-
-        const minBet2 = suggestionMap2.reduce((min, suggestion) => {
-          if (suggestion.value < min.value) return suggestion;
-          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
-          return min;
-        }, suggestionMap2[0]);
-
-        if (minBet2.type === 'number') {
-          gameData2 = {
-            gameId: currentGameId2,
-            number: minBet2.key,
-            color: getColor(minBet2.key),
-            bigOrSmall: getBigOrSmall(minBet2.key),
-          };
-
-        } else if (minBet2.type === 'color') {
-          const colorNumbers2 = minBet2.key === 'GREEN' ? [1, 3, 7, 9] :
-                               minBet2.key === 'RED' ? [2, 4, 6, 8] :
-                               minBet2.key === 'VIOLET' ? [0, 5] : [];
-          const selectedNumber2 = colorNumbers2[Math.floor(Math.random() * colorNumbers2.length)];
-          gameData2 = {
-            gameId: currentGameId2,
-            number: selectedNumber2,
-            color: getColor(selectedNumber2),
-            bigOrSmall: getBigOrSmall(selectedNumber2),
-          };
-        } else if (minBet2.type === 'size') {
-          const sizeNumber2 = minBet2.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
-          gameData2 = {
-            gameId: currentGameId2,
-            number: sizeNumber2,
-            color: getColor(sizeNumber2),
-            bigOrSmall: getBigOrSmall(sizeNumber2),
-          };
-        }
+        gameData2 = fetchGameData2();
       }
-
-      // Emit game data
       io.emit("adminSelectedGameData2", gameData2);
     }
     if (timerDuration2 <= 0) {
@@ -927,52 +899,17 @@ const startRepeatingTimer3 = (io, durationMs) => {
       if (adminSelectedGameData3) {
         gameData3 = { gameId: currentGameId3, ...adminSelectedGameData3 };
         adminSelectedGameData3 = null;
-        io.emit("adminSelectedGameData3", adminSelectedGameData3);
+      } else if (isSuggestionOn3) {
+        const bestNumber = suggestNumber(stats3);
+        gameData3 = {
+          gameId: currentGameId3,
+          number: bestNumber,
+          color: getColor(bestNumber),
+          bigOrSmall: getBigOrSmall(bestNumber),
+        };
       } else {
-        const suggestions3 = getMinimumBetsAndUsers3();
-        const suggestionMap3 = [
-          { type: "number", value: suggestions3.minNumberBet.value, key: suggestions3.minNumberBet.index },
-          { type: "color", value: suggestions3.minColorBet.value, key: suggestions3.minColorBet.key },
-          { type: "size", value: suggestions3.minSizeBet.value, key: suggestions3.minSizeBet.key },
-        ];
-
-        const minBet3 = suggestionMap3.reduce((min, suggestion) => {
-          if (suggestion.value < min.value) return suggestion;
-          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
-          return min;
-        }, suggestionMap3[0]);
-
-        if (minBet3.type === 'number') {
-          gameData3 = {
-            gameId: currentGameId3,
-            number: minBet3.key,
-            color: getColor(minBet3.key),
-            bigOrSmall: getBigOrSmall(minBet3.key),
-          };
-
-        } else if (minBet3.type === 'color') {
-          const colorNumbers3 = minBet3.key === 'GREEN' ? [1, 3, 7, 9] :
-                               minBet3.key === 'RED' ? [2, 4, 6, 8] :
-                               minBet3.key === 'VIOLET' ? [0, 5] : [];
-          const selectedNumber3 = colorNumbers3[Math.floor(Math.random() * colorNumbers3.length)];
-          gameData3 = {
-            gameId: currentGameId3,
-            number: selectedNumber3,
-            color: getColor(selectedNumber3),
-            bigOrSmall: getBigOrSmall(selectedNumber3),
-          };
-        } else if (minBet3.type === 'size') {
-          const sizeNumber3 = minBet3.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
-          gameData3 = {
-            gameId: currentGameId3,
-            number: sizeNumber3,
-            color: getColor(sizeNumber3),
-            bigOrSmall: getBigOrSmall(sizeNumber3),
-          };
-        }
+        gameData3 = fetchGameData3();
       }
-
-      // Emit game data
       io.emit("adminSelectedGameData3", gameData3);
     }
     if (timerDuration3 <= 0) {
@@ -1130,52 +1067,17 @@ const startRepeatingTimer4 = (io, durationMs) => {
       if (adminSelectedGameData4) {
         gameData4 = { gameId: currentGameId4, ...adminSelectedGameData4 };
         adminSelectedGameData4 = null;
-        io.emit("adminSelectedGameData4", adminSelectedGameData4);
+      }else if (isSuggestionOn4) {
+        const bestNumber = suggestNumber(stats4);
+        gameData4 = {
+          gameId: currentGameId4,
+          number: bestNumber,
+          color: getColor(bestNumber),
+          bigOrSmall: getBigOrSmall(bestNumber),
+        };
       } else {
-        const suggestions4 = getMinimumBetsAndUsers4();
-        const suggestionMap4 = [
-          { type: "number", value: suggestions4.minNumberBet.value, key: suggestions4.minNumberBet.index },
-          { type: "color", value: suggestions4.minColorBet.value, key: suggestions4.minColorBet.key },
-          { type: "size", value: suggestions4.minSizeBet.value, key: suggestions4.minSizeBet.key },
-        ];
-
-        const minBet4 = suggestionMap4.reduce((min, suggestion) => {
-          if (suggestion.value < min.value) return suggestion;
-          if (suggestion.value === min.value && suggestion.type === "number") return suggestion; // Prioritize 'number'
-          return min;
-        }, suggestionMap4[0]);
-
-        if (minBet4.type === 'number') {
-          gameData4 = {
-            gameId: currentGameId4,
-            number: minBet4.key,
-            color: getColor(minBet4.key),
-            bigOrSmall: getBigOrSmall(minBet4.key),
-          };
-
-        } else if (minBet4.type === 'color') {
-          const colorNumbers4 = minBet4.key === 'GREEN' ? [1, 3, 7, 9] :
-                               minBet4.key === 'RED' ? [2, 4, 6, 8] :
-                               minBet4.key === 'VIOLET' ? [0, 5] : [];
-          const selectedNumber4 = colorNumbers4[Math.floor(Math.random() * colorNumbers4.length)];
-          gameData4 = {
-            gameId: currentGameId4,
-            number: selectedNumber4,
-            color: getColor(selectedNumber4),
-            bigOrSmall: getBigOrSmall(selectedNumber4),
-          };
-        } else if (minBet4.type === 'size') {
-          const sizeNumber4 = minBet4.key === 'Big' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 5);
-          gameData4 = {
-            gameId: currentGameId4,
-            number: sizeNumber4,
-            color: getColor(sizeNumber4),
-            bigOrSmall: getBigOrSmall(sizeNumber4),
-          };
-        }
+        gameData4 = fetchGameData4();
       }
-
-      // Emit game data
       io.emit("adminSelectedGameData4", gameData4);
     }
     if (timerDuration4 <= 0) {
@@ -1348,17 +1250,54 @@ export const initializeSocket = (server) => {
       callback({ success: true });
     });
 
+    //for 300 sec
     socket.on("startTimer4", (durationMs, callback) => {
       startRepeatingTimer4(io, durationMs);
       callback({ success: true });
     });
+    
     socket.emit("gameId", { gameId: nextGameId });
     socket.emit("gameId2", { gameId: nextGameId2 });
     socket.emit("gameId3", { gameId: nextGameId3 });
     socket.emit("gameId4", { gameId: nextGameId4 });
 
+    //for 30s
+    socket.on("requestSuggestionState", () => {
+      socket.emit("toggleSuggestion", isSuggestionOn);
+    });
+    socket.on("toggleSuggestion", (state) => {
+      isSuggestionOn = state;
+      io.emit("toggleSuggestion", isSuggestionOn);
+    });
 
+    //for 60s
+    socket.on("requestSuggestionState2", () => {
+      socket.emit("toggleSuggestion2", isSuggestionOn2);
+    });
+    socket.on("toggleSuggestion2", (state) => {
+      isSuggestionOn2 = state;
+      io.emit("toggleSuggestion2", isSuggestionOn2);
+    });
+
+    //for 180s
+    socket.on("requestSuggestionState3", () => {
+      socket.emit("toggleSuggestion3", isSuggestionOn3);
+    });
+    socket.on("toggleSuggestion3", (state) => {
+      isSuggestionOn3 = state;
+      io.emit("toggleSuggestion3", isSuggestionOn3);
+    });
     
+
+    //for 300s
+    socket.on("requestSuggestionState4", () => {
+      socket.emit("toggleSuggestion4", isSuggestionOn4);
+    });
+    socket.on("toggleSuggestion4", (state) => {
+      isSuggestionOn4 = state;
+      io.emit("toggleSuggestion4", isSuggestionOn4);
+    });
+
     //for 30 sec
     socket.on("stopTimer", (callback) => {
       if (timer) clearInterval(timer);
@@ -1443,7 +1382,6 @@ export const initializeSocket = (server) => {
         callback({ success: false, message: error.message });
       }
     });
-
 
     //for 60 sec
     socket.on("userBet2", async (data, callback) => {
