@@ -660,7 +660,7 @@ const startRepeatingTimer = (io, durationMs) => {
               wallet.updatedAt = Date.now();
               await wallet.save();
             }
-
+            socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
               if (isWin) {
@@ -829,7 +829,7 @@ const startRepeatingTimer2 = (io, durationMs) => {
               wallet.updatedAt = Date.now();
               await wallet.save();
             }
-
+            socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
               if (isWin) {
@@ -986,7 +986,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
               winLoss: winLossDisplay,
               duration:"180s"
             });
-            await gameResult.save(x);
+            await gameResult.save();
       
             // Update wallet
             const wallet = await Wallet.findOne({ userId });
@@ -997,7 +997,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
               wallet.updatedAt = Date.now();
               await wallet.save();
             }
-
+            socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
               if (isWin) {
@@ -1165,7 +1165,7 @@ const startRepeatingTimer4 = (io, durationMs) => {
               wallet.updatedAt = Date.now();
               await wallet.save();
             }
-
+            socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
               if (isWin) {
@@ -1255,7 +1255,7 @@ export const initializeSocket = (server) => {
       startRepeatingTimer4(io, durationMs);
       callback({ success: true });
     });
-    
+
     socket.emit("gameId", { gameId: nextGameId });
     socket.emit("gameId2", { gameId: nextGameId2 });
     socket.emit("gameId3", { gameId: nextGameId3 });
