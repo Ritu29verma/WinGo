@@ -80,7 +80,7 @@ function suggestNumber(stats) {
   };
 
   let minLoss = Infinity;
-  let bestNumber = -1;
+  let bestNumbers = []; // Store all numbers with the same minimum loss
 
   for (let number = 0; number < 10; number++) {
     let payout = 0;
@@ -100,14 +100,17 @@ function suggestNumber(stats) {
     // Calculate potential loss
     const potentialLoss = payout - stats.totalGameAmount;
 
-    // Track the number with minimum loss
+    // Check if this loss is the smallest we've seen
     if (potentialLoss < minLoss) {
       minLoss = potentialLoss;
-      bestNumber = number;
+      bestNumbers = [number]; // Reset to this number
+    } else if (potentialLoss === minLoss) {
+      bestNumbers.push(number); // Add to the list of best numbers
     }
   }
 
-  return bestNumber;
+  // Choose a random number among the bestNumbers
+  return bestNumbers[Math.floor(Math.random() * bestNumbers.length)];
 }
 
 //for 30 sec
