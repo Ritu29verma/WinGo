@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import logo from "../assets/image2.png";
 import socket from "../socket";
 import beepSound from "../assets/amp2.mp3";
-
+import { FiVolume2, FiVolumeX } from "react-icons/fi"
 const TimerSection = ({ selectedTime, setSelectedTime }) => {
   const [timeRemaining, setTimeRemaining] = useState(selectedTime);
   const [timerStatus, setTimerStatus] = useState(false);
   const [currentGameId, setCurrentGameId] = useState(null);
   const [timerDigits, setTimerDigits] = useState([0, 0, 0, 0]);
   const [alertNumber, setAlertNumber] = useState(null);
+  const [isMuted, setIsMuted] = useState(false); 
   const beepRef = useRef(null);
 
   const handleTimerUpdate = (event) => {
@@ -28,7 +29,7 @@ const TimerSection = ({ selectedTime, setSelectedTime }) => {
 
     if (totalSeconds <= 5 && totalSeconds > 0) {
       setAlertNumber(parseInt(totalSeconds, 10));
-      if (beepRef.current) {
+      if (beepRef.current && !isMuted) {
         beepRef.current.play();
       }
     } else {
@@ -94,7 +95,11 @@ const TimerSection = ({ selectedTime, setSelectedTime }) => {
       socket.off(gameIdEvent);
     };
   }, [selectedTime]);
-
+    useEffect(() => {
+      if (beepRef.current) {
+        beepRef.current.muted = isMuted;
+      }
+    }, [isMuted]);
   return (
     <div className="bg-customBlue w-full max-w-7xl rounded-lg p-4 mb-4 shadow-lg">
       <audio ref={beepRef} src={beepSound} preload="auto"></audio>
@@ -120,11 +125,24 @@ const TimerSection = ({ selectedTime, setSelectedTime }) => {
       </div>
 
       {/* Countdown Display */}
-      <div className="flex flex-col md:flex-row justify-between items-center bg-black p-4 rounded-lg shadow-lg">
-        {/* Header Section */}
-        <h2 className="text-base sm:text-lg md:text-xl font-bold text-white mb-4 md:mb-0">
+      <div className="flex flex-col gap-y-2 md:flex-row justify-between items-center bg-black p-4 rounded-lg shadow-lg">
+      
+      <div className="flex items-center space-x-2">
+        <h2 className="text-base md:text-xl font-bold text-white">
           How to Play
         </h2>
+        <button
+        onClick={() => setIsMuted(!isMuted)}
+        className="flex items-center justify-center bg-gray-500 text-black p-1 md:p-2 rounded-full shadow-md hover:bg-gray-400 
+                   md:w-8 md:h-8"
+      >
+        {isMuted ? (
+          <FiVolumeX size={16} className="text-black md:text-sm" />
+        ) : (
+          <FiVolume2 size={16} className="text-black md:text-sm" />
+        )}
+      </button>
+      </div>
 
         {/* Time Remaining Clock */}
         <div className="flex space-x-2 items-center">

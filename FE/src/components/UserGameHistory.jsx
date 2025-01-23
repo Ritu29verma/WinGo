@@ -97,7 +97,7 @@ const UserGameHistory = () => {
         </div>
       </>
     )}
-    <ToastContainer />
+    <ToastContainer  autoClose={600} />
   </div>
 </AdminNavbar>
   );
