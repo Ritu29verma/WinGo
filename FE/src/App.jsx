@@ -32,7 +32,7 @@ import AdminDashboard4 from './pages/AdminDashboard4';
 function App() {
   return (
     <>
-      <ToastContainer />
+      <ToastContainer  autoClose={600} />
       <BrowserRouter>
         <Routes>
           <Route path="/loader" element={<Loader />} />

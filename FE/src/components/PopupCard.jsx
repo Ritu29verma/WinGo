@@ -72,7 +72,7 @@ const PopupCard = ({ isOpen, onClose, content, color, selectedTime }) => {
 
   return (
     <div>
-      <ToastContainer />
+      <ToastContainer autoClose={600} />
       {isOpen && (
        <div className="fixed inset-0 bg-black bg-opacity-50 z-10 flex items-end md:items-center justify-center">
        <div

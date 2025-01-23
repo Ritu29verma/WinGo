@@ -204,7 +204,7 @@ const AdminSignup = () => {
           </span>
         </p>
       </div>
-      <ToastContainer />
+      <ToastContainer  autoClose={600} />
     </div>
   );
 };

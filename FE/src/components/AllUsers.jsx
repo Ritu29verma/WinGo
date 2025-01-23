@@ -98,7 +98,7 @@ const UsersTable = () => {
         </table>
       </div>
     )}
-    <ToastContainer />
+    <ToastContainer  autoClose={600} />
   </div>
 </AdminNavbar>
 

@@ -54,7 +54,7 @@ const PaymentChannels = () => {
 
   return (
     <div className="bg-gray-700 text-white p-6 space-y-6">
-      <ToastContainer />
+      <ToastContainer autoClose={400}  />
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Payment Channels</h1>
