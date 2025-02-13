@@ -467,10 +467,10 @@ export const getAllUsers = async (req, res) => {
 
 export const AdminGameResults = async (req, res) => {
   try {
-    const { fromDate, toDate } = req.query; // Get fromDate and toDate from query
+    const { fromDate, toDate, page, limit } = req.query;
 
     const filter = {};
-    
+
     // Validate that fromDate and toDate are provided
     if (!fromDate || !toDate) {
       return res.status(400).json({ message: "Both fromDate and toDate are required." });
@@ -484,21 +484,30 @@ export const AdminGameResults = async (req, res) => {
     // Add date range filter
     filter.time = { $gte: startOfDay, $lte: endOfDay };
 
-    // Fetch game results based on the filter
+    const totalResults = await GameResult.countDocuments(filter);
+
     const gameResults = await GameResult.find(filter)
-      .sort({ time: -1 }) // Sort by most recent first
-      .populate("userid", "phoneNo"); // Populate phoneNo from user document
+      .sort({ time: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .populate("userid", "phoneNo");
 
-      if (!gameResults.length) {
+    if (!gameResults.length) {
         return res.json([]); // Return an empty array if no results are found
-      }
+    }
+    res.json({
+      items: gameResults,
+      totalPages: Math.ceil(totalResults / limit), // Calculate total pages
+      currentPage: Number(page),
+      totalResults,
+    });
 
-    res.json(gameResults);
   } catch (error) {
     console.error("Error fetching admin game results:", error);
     res.status(500).json({ error: "Failed to fetch game results for admin" });
   }
-};
+}
+
 
 
 export const getPurchasedAmount = async (req, res) => {
@@ -521,11 +530,11 @@ export const getPurchasedAmount = async (req, res) => {
     const todate = new Date(toDate);
     todate.setHours(23, 59, 59, 999);
 
-    // Query for purchased amounts within the date range
+ 
     const query = {
       date: {
-        $gte: fromdate, // Include the `from` date
-        $lte: todate,   // Include the `to` date
+        $gte: fromdate,
+        $lte: todate, 
       },
     };
 
@@ -542,11 +551,15 @@ export const getPurchasedAmount = async (req, res) => {
 
     // Calculate the total amount for the specified date range
     const totalAmount = purchasedAmounts.reduce((sum, record) => sum + record.totalAmount, 0);
+    const totalProfit = purchasedAmounts.reduce((sum, record) => sum + record.profit, 0);
+    const totalLoss = purchasedAmounts.reduce((sum, record) => sum + record.loss, 0);
 
     // Return the result
     res.status(200).json({
       success: true,
       totalAmount,
+      totalProfit,
+      totalLoss,
     });
   } catch (error) {
     console.error("Error fetching purchased amount:", error);

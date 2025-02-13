@@ -3,17 +3,24 @@ import mongoose from "mongoose";
 const PurchasedAmountSchema = new mongoose.Schema(
     {
         date: {
-          type: Date,
-          default: new Date().setHours(0, 0, 0, 0),
+            type: Date,
+            default: new Date().setHours(0, 0, 0, 0),
         },
-
-        totalAmount : {
-          type: Number,
-         default: 0,
+        totalAmount: {
+            type: Number,
+            default: 0,
+        },
+        profit: {
+            type: Number,
+            default: 0,
+        },
+        loss: {
+            type: Number,
+            default: 0,
         }
-      },
-      { timestamps: true }
-    );
+    },
+    { timestamps: true }
+);
 
 const PurchasedAmount = mongoose.model("PurchasedAmount", PurchasedAmountSchema);
 export default PurchasedAmount;

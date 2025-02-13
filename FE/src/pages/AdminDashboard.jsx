@@ -241,7 +241,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
         </div>
      </div>
     
-        <AdminSuggestions/>
+        {/* <AdminSuggestions/> */}
         <UserStats/>
 
    {/* Game Data Logs Section */}
@@ -269,6 +269,8 @@ const AdminDashboard = ({ isSidebarOpen }) => {
                     <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
+                    <option value="1000">1000</option>
+                    <option value="5000">5000</option>
                     <option value="all">All</option>
                   </select>
                   <p className="text-white mt-2">Current Logs: {logsCount || "..."}</p>
