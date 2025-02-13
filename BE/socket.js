@@ -20,7 +20,7 @@ let timerDuration = 0;
 let isTimerActive = false;
 let currentGameId = null;
 let adminSelectedGameData = null;
-let isSuggestionOn = false; 
+let isSuggestionOn = true; 
 //for 60 sec
 let nextGameId2 = null;
 let timer2 = null;
@@ -28,7 +28,7 @@ let timerDuration2 = 0;
 let isTimerActive2 = false;
 let currentGameId2 = null;
 let adminSelectedGameData2 = null;
-let isSuggestionOn2 = false; 
+let isSuggestionOn2 = true; 
 //for 180 sec
 let nextGameId3 = null;
 let timer3 = null;
@@ -36,7 +36,7 @@ let timerDuration3 = 0;
 let isTimerActive3 = false;
 let currentGameId3 = null;
 let adminSelectedGameData3 = null;
-let isSuggestionOn3 = false; 
+let isSuggestionOn3 = true; 
 //for 300 sec
 let nextGameId4 = null;
 let timer4 = null;
@@ -44,7 +44,7 @@ let timerDuration4 = 0;
 let isTimerActive4 = false;
 let currentGameId4 = null;
 let adminSelectedGameData4 = null;
-let isSuggestionOn4 = false; 
+let isSuggestionOn4 = true; 
 
 const updatePurchasedAmount = async (amount) => {
   try {
@@ -71,6 +71,31 @@ const updatePurchasedAmount = async (amount) => {
     console.error("Error updating purchased amount:", error);
   }
 };
+
+const updateProfit = async (amount) => {
+  const today = new Date().setHours(0, 0, 0, 0);
+  let record = await PurchasedAmount.findOne({ date: today });
+
+  if (!record) {
+      record = new PurchasedAmount({ date: today });
+  }
+
+  record.profit += amount;
+  await record.save();
+};
+
+const updateLoss = async (amount) => {
+  const today = new Date().setHours(0, 0, 0, 0);
+  let record = await PurchasedAmount.findOne({ date: today });
+
+  if (!record) {
+      record = new PurchasedAmount({ date: today });
+  }
+
+  record.loss += amount;
+  await record.save();
+};
+
 
 function suggestNumber(stats) {
   const payoutRatios = {
@@ -668,8 +693,11 @@ const startRepeatingTimer = (io, durationMs) => {
             if (user) {
               if (isWin) {
                 user.totalWinAmount += winLossDisplay;
+                await updateLoss(winAmount * (1 - taxRate)); 
+                await updateProfit(winAmount * taxRate); 
               } else {
                 user.totalLossAmount -= winLossDisplay;
+                await updateProfit(purchaseAmount);
               }
               user.updatedAt = Date.now();
               await user.save();

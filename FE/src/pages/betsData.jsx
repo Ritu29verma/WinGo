@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef , useCallback} from 'react';
 import axios from 'axios';
 import moment from 'moment';
 import AdminNavbar from '../components/AdminNavbar';
@@ -14,6 +14,12 @@ const BetsData = () => {
   const [error, setError] = useState("");
   const [expandedRows, setExpandedRows] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [totalProfit, setTotalProfit] = useState(0);
+  const [totalLoss, setTotalLoss] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef();
+  const initialLoad = useRef(true);
 
   const fetchTotalPurchasedAmount = async (fromDate, toDate) => {
     try {
@@ -21,10 +27,13 @@ const BetsData = () => {
         `${import.meta.env.VITE_BASE_URL}/admin/total-purchased-amount`,
         { params: { fromDate, toDate } }
       );
-      setTotalAmount(response.data.totalAmount || 0); // Default to 0 if totalAmount is undefined
+      setTotalAmount(response.data.totalAmount || 0);
+      setTotalProfit(response.data.totalProfit || 0);
+      setTotalLoss(response.data.totalLoss || 0);
+
     } catch (error) {
       console.error("Error fetching total purchased amount:", error);
-      setTotalAmount(0); // Set to 0 in case of error
+      setTotalAmount(0); 
     }
   };
 
@@ -33,31 +42,61 @@ const BetsData = () => {
       setLoading(true);
       setError("");
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin/betsData`, {
-        params: { fromDate, toDate },
+        params: { fromDate, toDate, page, limit: 30 },
       });
-      setBetsData(response.data || []); // Default to an empty array if no data
+      const newData = response.data.items || [];
+
+      setBetsData((prev) => [...prev, ...newData]);
+      setHasMore(newData.length === 30);
+      setPage((prev) => prev + 1);
     } catch (err) {
       console.error("Error fetching bets data:", err);
-      setError(""); // Do not set an error message for display
-      setBetsData([]); // Default to an empty array in case of error
+      setError("");
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
   };
   useEffect(() => {
     const today = moment().format('YYYY-MM-DD');
-    fetchBetsData(today, today);
-    fetchTotalPurchasedAmount(today, today);
+
+    if (initialLoad.current) {  
+      initialLoad.current = false; 
+      fetchBetsData(today, today);
+      fetchTotalPurchasedAmount(today, today);
+    }
+
   }, []);
+
+  const lastElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchBetsData(fromDate, toDate);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, fromDate, toDate, fetchBetsData]
+  );
+
 
   const handleSearch = () => {
     if (!moment(fromDate, "YYYY-MM-DD", true).isValid() || !moment(toDate, "YYYY-MM-DD", true).isValid() || moment(fromDate).isAfter(moment(toDate))) {
       toast.error("Please enter valid dates and ensure 'From Date' is not after 'To Date'.");
       return;
     }
+    setBetsData([]);
+    setPage(1);
+    setHasMore(true);
     fetchBetsData(fromDate, toDate);
     fetchTotalPurchasedAmount(fromDate, toDate);
   };
+
 
   const toggleRow = (id) => {
     setExpandedRows((prevExpandedRows) =>
@@ -75,7 +114,7 @@ const BetsData = () => {
           <Loader />
         </div>
       )}
-      
+
       {/* Search Section */}
       <div className={`flex justify-between ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto w-1/3">
@@ -109,13 +148,28 @@ const BetsData = () => {
             </button>
           </div>
         </div>
-  
-        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
-          <h2 className="text-xl font-bold mb-6">Total Purchased Amount</h2>
-          <p className="text-2xl mt-4">₹{totalAmount}</p>
+
+        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto flex flex-col gap-4">
+          {/* Row 1: Total InGame Amount */}
+          <div className="flex flex-col">
+            <h2 className="text-xl font-bold">Total InGame Amount</h2>
+            <p className="text-2xl mt-2 text-left">₹{totalAmount}</p>
+          </div>
+          {/* Row 2: Total Profit Amount */}
+          <div className="flex flex-col">
+            <h2 className="text-xl font-bold">Total Profit Amount</h2>
+            <p className="text-2xl mt-2 text-left text-green-500">₹{totalProfit}</p>
+          </div>
+
+          {/* Row 3: Total Loss Amount */}
+          <div className="flex flex-col">
+            <h2 className="text-xl font-bold">Total Loss Amount</h2>
+            <p className="text-2xl mt-2 text-left text-red">₹{totalLoss}</p>
+          </div>
         </div>
+
       </div>
-  
+
       {/* Results Section */}
       <div className={`bg-gray-800 rounded-lg p-4 mx-auto ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
         <h1 className="text-lg font-bold mb-4 text-center">Game Results</h1>
@@ -124,16 +178,17 @@ const BetsData = () => {
           <p className="text-center text-white">No game history found.</p>
         ) : (
           <div className="space-y-4">
-            {betsData.map((result) => (
+            {betsData.map((result,index) => (
               <div
                 key={result._id}
                 className="bg-slate-800 rounded-lg shadow-md p-4 cursor-pointer hover:bg-slate-700"
                 onClick={() => toggleRow(result._id)}
+                ref={betsData.length - 1 === index ? lastElementRef : null}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-white text-lg">Contact: {result.userid ? result.userid.phoneNo : 'N/A'}</p>
-                    <p className="text-gray-400 text-md">{result.periodNumber}</p>
+                    <p className="text-white text-lg">Contact: {result.userid ? result.userid.phoneNo : 'N/A'}  </p>
+                    <p className="text-gray-400 text-md">{result.periodNumber} </p>
                   </div>
                   <div>
                     <p
@@ -154,6 +209,10 @@ const BetsData = () => {
                 </div>
                 {expandedRows.includes(result._id) && (
                   <div className="mt-4 bg-gray-900 rounded-lg p-3 text-sm">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-gray-400">Duration:</p>
+                      <p className="text-gold">{result.duration}</p>
+                    </div>
                     <div className="flex justify-between mb-2">
                       <p className="text-gray-400">Purchase Amount:</p>
                       <p className="text-white">₹{result.purchaseAmount.toFixed(2)}</p>
@@ -184,13 +243,16 @@ const BetsData = () => {
                 )}
               </div>
             ))}
+             {loading && <p className="text-center text-white">Loading...</p>}
+            {!hasMore && <p className="text-center text-white">No more data to load.</p>}
           </div>
         )}
       </div>
     </div>
   </AdminNavbar>
-  
+
   );
 };
 
 export default BetsData;
+
