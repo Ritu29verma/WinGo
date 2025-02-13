@@ -856,6 +856,7 @@ const startRepeatingTimer2 = (io, durationMs) => {
             if (wallet) {
               if (isWin) {
                 wallet.totalAmount += (winAmount * (1 - taxRate));
+                
               }
               wallet.updatedAt = Date.now();
               await wallet.save();
@@ -865,8 +866,11 @@ const startRepeatingTimer2 = (io, durationMs) => {
             if (user) {
               if (isWin) {
                 user.totalWinAmount += winLossDisplay;
+                await updateLoss(winAmount * (1 - taxRate)); 
+                await updateProfit(winAmount * taxRate); 
               } else {
                 user.totalLossAmount -= winLossDisplay;
+                await updateProfit(purchaseAmount);
               }
               user.updatedAt = Date.now();
               await user.save();
@@ -1033,8 +1037,11 @@ const startRepeatingTimer3 = (io, durationMs) => {
             if (user) {
               if (isWin) {
                 user.totalWinAmount += winLossDisplay;
+                await updateLoss(winAmount * (1 - taxRate)); 
+                await updateProfit(winAmount * taxRate); 
               } else {
                 user.totalLossAmount -= winLossDisplay;
+                await updateProfit(purchaseAmount);
               }
               user.updatedAt = Date.now();
               await user.save();
@@ -1201,8 +1208,11 @@ const startRepeatingTimer4 = (io, durationMs) => {
             if (user) {
               if (isWin) {
                 user.totalWinAmount += winLossDisplay;
+                await updateLoss(winAmount * (1 - taxRate)); 
+                await updateProfit(winAmount * taxRate); 
               } else {
                 user.totalLossAmount -= winLossDisplay;
+                await updateProfit(purchaseAmount);
               }
               user.updatedAt = Date.now();
               await user.save();
