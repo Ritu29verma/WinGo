@@ -228,7 +228,7 @@ const AdminDashboard = ({ isSidebarOpen }) => {
         </div>
      </div>
     
-        <AdminSuggestions/>
+        {/* <AdminSuggestions/> */}
         <UserStats/>
 
    {/* Game Data Logs Section */}
