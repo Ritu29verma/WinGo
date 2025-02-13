@@ -418,10 +418,6 @@ export const getNonPendingTransactions = async (req, res) => {
 };
 
 
-
-
-
-
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 }).lean();
@@ -467,33 +463,34 @@ export const getAllUsers = async (req, res) => {
 
 export const AdminGameResults = async (req, res) => {
   try {
-    const { fromDate, toDate } = req.query; // Get fromDate and toDate from query
+    const { fromDate, toDate, page, limit } = req.query; 
 
-    const filter = {};
-    
-    // Validate that fromDate and toDate are provided
     if (!fromDate || !toDate) {
       return res.status(400).json({ message: "Both fromDate and toDate are required." });
     }
 
-    // Parse and validate the dates
     const startOfDay = new Date(fromDate);
     const endOfDay = new Date(toDate);
-    endOfDay.setUTCHours(23, 59, 59, 999); // Set to end of the day
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
-    // Add date range filter
-    filter.time = { $gte: startOfDay, $lte: endOfDay };
+    const filter = { time: { $gte: startOfDay, $lte: endOfDay } };
 
-    // Fetch game results based on the filter
+    // Get total count of documents that match the filter
+    const totalResults = await GameResult.countDocuments(filter);
+
+    // Fetch paginated game results
     const gameResults = await GameResult.find(filter)
-      .sort({ time: -1 }) // Sort by most recent first
-      .populate("userid", "phoneNo"); // Populate phoneNo from user document
+      .sort({ time: -1 })
+      .skip((page - 1) * limit) // Skip records based on page number
+      .limit(Number(limit)) // Limit number of records per page
+      .populate("userid", "phoneNo");
 
-      if (!gameResults.length) {
-        return res.json([]); // Return an empty array if no results are found
-      }
-
-    res.json(gameResults);
+    res.json({
+      items: gameResults,
+      totalPages: Math.ceil(totalResults / limit), // Calculate total pages
+      currentPage: Number(page),
+      totalResults,
+    });
   } catch (error) {
     console.error("Error fetching admin game results:", error);
     res.status(500).json({ error: "Failed to fetch game results for admin" });
