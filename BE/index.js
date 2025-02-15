@@ -11,6 +11,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import {initializeSocket} from "./socket.js"; 
 import gameRoutes from "./routes/gameRoutes.js"
 import path from "path";
+import chatModule from './chat-module/chatModule.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use("/auth", authRoutes);
 // app.use("/api/game", gameRoutes);
 app.use("/admin", adminRoutes);
 app.use("/game", gameRoutes);
+app.use('/chat', chatModule);
 
 
 
