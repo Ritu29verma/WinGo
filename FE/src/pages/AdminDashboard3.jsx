@@ -95,10 +95,10 @@ const AdminDashboard3 = ({ isSidebarOpen }) => {
 
     socket.on("gameId3", ({ gameId }) => {
       setCurrentGameId(gameId);
-      localStorage.setItem("nextGameId3", gameId);
+      sessionStorage.setItem("nextGameId3", gameId);
     });
 
-    const storedGameId = localStorage.getItem("nextGameId3");
+    const storedGameId = sessionStorage.getItem("nextGameId3");
     if (storedGameId) setCurrentGameId(storedGameId);
 
     return () => {

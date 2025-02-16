@@ -17,8 +17,10 @@ const Login = () => {
       });
 
       const { token, user } = response.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user_id", user.id);
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user_id", user.id);
+      sessionStorage.setItem("phoneNumber",user.phoneNo);
+      sessionStorage.setItem("username",username);
 
       navigate("/");
     } catch (error) {

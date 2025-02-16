@@ -84,10 +84,10 @@ const TimerSection = ({ selectedTime, setSelectedTime }) => {
 
     socket.on(gameIdEvent, ({ gameId }) => {
       setCurrentGameId(gameId);
-      localStorage.setItem(localStorageKey, gameId);
+      sessionStorage.setItem(localStorageKey, gameId);
     });
 
-    const storedGameId = localStorage.getItem(localStorageKey);
+    const storedGameId = sessionStorage.getItem(localStorageKey);
     if (storedGameId) setCurrentGameId(storedGameId);
 
     return () => {

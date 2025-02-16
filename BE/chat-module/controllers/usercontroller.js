@@ -1,14 +1,20 @@
 import User from '../models/User.js';
 
-// Register a user
-export const registerUser = async (req, res) => {
+// Check if user exists, create if not, then return user
+export const checkOrRegisterUser = async (req, res) => {
   try {
-    const { phoneNumber, isGuest } = req.body;
-    const count = await User.count();
-    const username = isGuest ? `Guest ${count + 1}` : `User ${count + 1}`;
+    const { phoneNumber, username, isGuest } = req.body;
 
-    const user = await User.create({ phoneNumber, username, isGuest });
-    res.status(201).json(user);
+    let user = await User.findOne({ where: { phoneNumber } });
+
+    if (!user) {
+      const count = await User.count();
+      const finalUsername = isGuest ? `GuestUser ${count + 1}` : username; // Fixed
+
+      user = await User.create({ phoneNumber, username: finalUsername, isGuest });
+    }
+    
+    res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

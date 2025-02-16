@@ -10,7 +10,7 @@ const PrivateRouteUser = ({ children }) => {
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         if (!token) {
           setIsAuthenticated(false);
           return;
@@ -32,8 +32,8 @@ const PrivateRouteUser = ({ children }) => {
   }, []);
   useEffect(() => {
     if (isAuthenticated) {
-      const userId = localStorage.getItem("user_id");
-      const token = localStorage.getItem("token");
+      const userId = sessionStorage.getItem("user_id");
+      const token = sessionStorage.getItem("token");
 
       if (userId) {
         let parsedUserId;

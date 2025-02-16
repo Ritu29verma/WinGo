@@ -15,7 +15,7 @@ const QRModal = ({ isOpen, onClose, channel, depositAmount, walletDetails, setDe
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         toast.error("Authentication token missing. Please log in.");
         return;

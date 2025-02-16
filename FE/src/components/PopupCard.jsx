@@ -31,7 +31,7 @@ const PopupCard = ({ isOpen, onClose, content, color, selectedTime }) => {
   };
 
   const handlePlaceBet = () => {
-    const userId = localStorage.getItem("user_id");
+    const userId = sessionStorage.getItem("user_id");
     const data = { userId, content, purchaseAmount: quantity };
   
     // Determine the event name based on the selectedTime

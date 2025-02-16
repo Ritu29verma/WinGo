@@ -34,7 +34,7 @@ const DepositPage = () => {
 
   useEffect(() => {
     const fetchWalletDetails = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/auth/wallet-details`,

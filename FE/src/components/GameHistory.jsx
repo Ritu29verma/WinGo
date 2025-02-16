@@ -113,7 +113,7 @@ const renderBets = () => {
 
 
   const fetchGameResults = async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       setError("User not authenticated. Please log in.");
       setLoading(false);

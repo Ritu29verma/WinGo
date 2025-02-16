@@ -9,7 +9,7 @@ const WalletSection = ({ token }) => {
   const navigate = useNavigate();
 
   const syncWallets = async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) return;
 
     try {
@@ -25,7 +25,7 @@ const WalletSection = ({ token }) => {
   };
 
   const fetchWalletDetails = async () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       setError("User is not authenticated. Please log in.");

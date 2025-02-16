@@ -28,7 +28,7 @@ import Loader from './components/Loader';
 import AdminDashboard2 from './pages/AdminDashboard2';
 import AdminDashboard3 from './pages/AdminDashboard3';
 import AdminDashboard4 from './pages/AdminDashboard4';
-import ChatWindow from './chat-module/ChatWindow';
+
 
 function App() {
   return (
@@ -61,6 +61,7 @@ function App() {
           <Route path="/deposit-history" element={<PrivateRouteUser><DepositHistory /></PrivateRouteUser>} />
         </Routes>
       </BrowserRouter>
+      
     </>
   );
 }

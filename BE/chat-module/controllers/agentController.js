@@ -1,14 +1,18 @@
 import  Agent  from '../models/Agent.js';
 
 // Register an agent
-export const registerAgent = async (req, res) => {
+export const checkOrRegisterAgent = async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
-    const count = await Agent.count();
-    const username = `Agent ${count + 1}`;
+    const { phoneNumber, isGuest } = req.body;
 
-    const agent = await Agent.create({ phoneNumber, username });
-    res.status(201).json(agent);
+    let agent = await Agent.findOne({ where: { phoneNumber } });
+
+    if (!agent) {
+      const count = await Agent.count();
+      const username = isGuest ? `GuestAgent ${count + 1}` : `Agent ${count+1}`;
+      agent = await Agent.create({ phoneNumber, username, isGuest });
+    }
+    res.status(200).json(agent);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

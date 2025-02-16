@@ -10,7 +10,7 @@ const PendingWithdrawalsTable = () => {
   const fetchWithdrawals = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         toast.error("Authentication token missing. Please log in.");
         return;

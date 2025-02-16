@@ -10,7 +10,7 @@ function Header({ isRegister, isLogin, isWingo, isLogout }) {
   useEffect(() => {
     const checkUserAuthentication = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         if (!token) {
           setIsAuthenticated(false);
           setIsAuthorized(false);
@@ -34,8 +34,8 @@ function Header({ isRegister, isLogin, isWingo, isLogout }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user_id");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user_id");
     setIsAuthenticated(false);
     setIsAuthorized(false);
     window.location.href = "https://goldencma.com/user-lucky";

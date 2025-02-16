@@ -1,9 +1,8 @@
 import express from 'express';
-import { registerAgent, getAllAgents } from '../controllers/agentController.js';
+import { checkOrRegisterAgent } from '../controllers/agentController.js';
 
 const router = express.Router();
 
-router.post('/register', registerAgent);
-router.get('/', getAllAgents);
+router.post('/check-or-register', checkOrRegisterAgent);
 
 export default router;

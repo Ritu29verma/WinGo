@@ -8,6 +8,7 @@ import Header from "../components/Header";
 import WinOrLoss from "../components/WinOrLoss";
 import socket from "../socket";
 import axios from "axios";
+import ChatHandler from '../chat-module/ChatHandler';
 const WinGo = () => {
   const [selectedTime, setSelectedTime] = useState(30);
   const [popupData, setPopupData] = useState({
@@ -33,7 +34,7 @@ const WinGo = () => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       // Call the sync-wallets API
       const syncWallets = async () => {
@@ -89,6 +90,7 @@ const WinGo = () => {
   };
 
   return (
+    <>
     <div className="bg-black min-h-screen min-w-full">
       <Header isLogout={true} isWingo={false} />
       <div className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 min-w-full rounded-br-full rounded-bl-full mb-2 flex flex-col items-center">
@@ -108,7 +110,10 @@ const WinGo = () => {
         isVisible={popupData.isVisible}
         onClose={handleClosePopup}
       />
+      
     </div>
+    <ChatHandler/>
+    </>
   );
 };
 

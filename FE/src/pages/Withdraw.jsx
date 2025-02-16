@@ -38,7 +38,7 @@ const Withdraw = () => {
 
   useEffect(() => {
     const fetchWalletDetails = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/auth/wallet-details`,
@@ -83,7 +83,7 @@ const Withdraw = () => {
         toast.error("Please enter the amount for USTD withdrawal.");
         return;
       }
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/auth/withdraw`,
         {

@@ -49,14 +49,14 @@ function LoginPage() {
 
       if (response.status === 200) {
         toast.success("Login successful");
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user_id", JSON.stringify(response.data.user.id));
-        localStorage.setItem("isAdmin",false)
+        sessionStorage.setItem("token", response.data.token);
+        sessionStorage.setItem("user_id", JSON.stringify(response.data.user.id));
+        sessionStorage.setItem("isAdmin",false)
         setTimeout(() => {
           navigate("/");
         }, 1500); 
       }
-      console.log(localStorage.getItem("token"))
+      console.log(sessionStorage.getItem("token"))
     } catch (error) {
       // Log the full error object for debugging
       console.error("Error during login:", error);

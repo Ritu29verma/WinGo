@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaBars } from "react-icons/fa"; 
 import AdminSidebar from "./AdminSidebar";
 import { useNavigate } from 'react-router-dom';
-
+import ChatHandlerAgent from "../chat-module/ChatHandlerAgent";
 const AdminNavbar = ({ children, logout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
@@ -16,14 +16,15 @@ const AdminNavbar = ({ children, logout }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("admin_id");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("isAdmin");
+    sessionStorage.removeItem("admin_id");
     // navigate("/admin/login");
     window.location.href="https://goldencma.com"
   };
 
   return (
+    <>
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <div
@@ -70,6 +71,8 @@ const AdminNavbar = ({ children, logout }) => {
         {React.cloneElement(children, { isSidebarOpen })}
       </div>
     </div>
+    <ChatHandlerAgent/>
+    </>
   );
 };
 

@@ -93,11 +93,11 @@ const AdminDashboard2 = ({ isSidebarOpen }) => {
     });
     socket.on("gameId2", ({ gameId }) => {
       setCurrentGameId(gameId);
-      localStorage.setItem("nextGameId2", gameId); 
+      sessionStorage.setItem("nextGameId2", gameId); 
     });
   
     // Restore the nextGameId on component load
-    const storedGameId = localStorage.getItem("nextGameId2");
+    const storedGameId = sessionStorage.getItem("nextGameId2");
     if (storedGameId) setCurrentGameId(storedGameId);
 
     return () => {
