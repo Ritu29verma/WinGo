@@ -28,7 +28,7 @@ import Loader from './components/Loader';
 import AdminDashboard2 from './pages/AdminDashboard2';
 import AdminDashboard3 from './pages/AdminDashboard3';
 import AdminDashboard4 from './pages/AdminDashboard4';
-
+import GuestChatWindow from './chat-module/GuestChatWindow';
 
 function App() {
   return (
@@ -59,6 +59,7 @@ function App() {
           <Route path="/wingo/withdraw" element={<PrivateRouteUser><Withdraw /></PrivateRouteUser>} />
           <Route path="/withdrawal-history" element={<PrivateRouteUser><WithdrawalHistory /></PrivateRouteUser>} />
           <Route path="/deposit-history" element={<PrivateRouteUser><DepositHistory /></PrivateRouteUser>} />
+          <Route path="/guest-chat" element={<GuestChatWindow />} />
         </Routes>
       </BrowserRouter>
       
