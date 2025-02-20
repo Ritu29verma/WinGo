@@ -1,6 +1,7 @@
 import Withdraw from "../models/Withdraw.js";
 import Wallet from "../models/Wallet.js";
-import {io,userSockets} from "../socket.js"
+import {userSockets} from "../socket.js";
+import {io} from "../index.js"
 import User from "../models/User.js";
 export const getPendingWithdrawals = async (req, res) => {
   try {

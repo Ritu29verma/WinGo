@@ -11,7 +11,8 @@ import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 import GameResult from "../models/GameResult.js";
 import PurchasedAmount from "../models/PurchaseAmount.js";
-import {io,userSockets} from "../socket.js";
+import {userSockets} from "../socket.js";
+import {io} from "../index.js"
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

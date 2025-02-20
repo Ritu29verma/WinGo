@@ -26,7 +26,7 @@ const sequelize = new Sequelize(
 })();
 
 // Sync database models
-sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => console.log('✅ Database synced'))
   .catch(error => console.error('❌ Error syncing the database:', error));
 

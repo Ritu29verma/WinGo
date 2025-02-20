@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import ChatWindow from "./ChatWindow";
 import { checkOrRegisterUser } from "./chatService";
 import { FiMessageCircle } from "react-icons/fi"; // Import chat icon
+import socket from "../socket";
 
 function ChatHandler() {
   const [showChat, setShowChat] = useState(false);
+  const [onlineAgents, setOnlineAgents] = useState([]);
+  const [userData, setUserData] = useState(null);
 
   const handleOpenChat = async () => {
     let phoneNumber = sessionStorage.getItem("phoneNumber") || "";
@@ -19,13 +22,44 @@ function ChatHandler() {
     // Save to session storage
     sessionStorage.setItem("phoneNumber", phoneNumber);
     sessionStorage.setItem("username", username);
-
-    // Register user if needed
+    console.log("Saved to sessionStorage:", { phoneNumber, username });
+    socket.emit("registerClient", { phoneNumber, username });
+    console.log("Emitted registerClient event:", { phoneNumber, username });
     const user = await checkOrRegisterUser(phoneNumber, username);
     if (user) {
+      setUserData(user);
       setShowChat(true);
     }
   };
+
+  const handleCloseChat = () => {
+    const phoneNumber = sessionStorage.getItem("phoneNumber");
+    if (phoneNumber) {
+      socket.emit("clientOffline", { phoneNumber });
+    }
+    setShowChat(false);
+  };
+
+  useEffect(() => {
+    socket.on("onlineAgents", (users) => {
+      console.log("Online Agents received:", users);
+      setOnlineAgents(users);
+    });
+  
+    return () => {
+      socket.off("onlineAgents");
+    };
+  }, []);
+
+
+  useEffect(() => {
+    return () => {
+      const phoneNumber = sessionStorage.getItem("phoneNumber");
+      if (phoneNumber) {
+        socket.emit("clientOffline", { phoneNumber });
+      }
+    };
+  }, []);  
 
   return (
     <>
@@ -38,8 +72,10 @@ function ChatHandler() {
         <FiMessageCircle size={28} />
       </button>
 
-      {/* Chat Window */}
-      {showChat && <ChatWindow onClose={() => setShowChat(false)} />}
+      {showChat && <ChatWindow onClose={handleCloseChat} 
+      onlineAgents={onlineAgents} 
+      user = {userData}
+      userRole="client" />}
     </>
   );
 }

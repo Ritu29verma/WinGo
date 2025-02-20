@@ -9,9 +9,10 @@ export const checkOrRegisterAgent = async (req, res) => {
 
     if (!agent) {
       const count = await Agent.count();
-      const username = isGuest ? `GuestAgent ${count + 1}` : `Agent ${count+1}`;
+      const username = isGuest ? `GuestAgent${count + 1}` : `Agent${count+1}`;
       agent = await Agent.create({ phoneNumber, username, isGuest });
     }
+    console.log("Agent registered/found:", agent);
     res.status(200).json(agent);
   } catch (error) {
     res.status(400).json({ error: error.message });

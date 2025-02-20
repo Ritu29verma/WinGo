@@ -12,3 +12,26 @@ export const checkOrRegisterAgent = async (phoneNumber, isGuest = false) => {
     return null;
   }
 };
+
+
+export  const fetchAgents = async () => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/chat/agents/all-agents`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching agents:", error);
+    return[];
+  }
+};
+
+export const fetchChatHistory = async (userId, agentId) => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/chat/chats/history`, {
+      params: { userId, agentId }, // ✅ Send both userId and agentId as query params
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching chat history:", error.response || error);
+    return [];
+  }
+};

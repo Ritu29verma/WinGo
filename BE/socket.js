@@ -9,7 +9,7 @@ import User from "./models/User.js"
 import Wallet from "./models/Wallet.js"
 import PurchasedAmount from "./models/PurchaseAmount.js";
 export let userSockets = new Map();
-export let io;
+import { io } from "./index.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -1260,14 +1260,7 @@ const startRepeatingTimer4 = (io, durationMs) => {
 
 
 
-export const initializeSocket = (server) => {
-  io = new Server(server, {
-    cors: {
-      origin: process.env.SOCKET_URL,
-      methods: ["GET", "POST"],
-    },
-  });
-
+export const initializeSocket = () => {
   io.on("connection", (socket) => {
     console.log("New client connected:", socket.id);
     socket.on("registerUser", (userId) => {
