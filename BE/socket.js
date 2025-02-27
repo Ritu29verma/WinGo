@@ -10,13 +10,14 @@ import Wallet from "./models/Wallet.js"
 import PurchasedAmount from "./models/PurchaseAmount.js";
 export let userSockets = new Map();
 export let io;
+import AdminWallet from "./models/AdminWallet.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 //for 30 sec
 let nextGameId = null;
 let timer = null;
-let timerDuration = 0;
+export let timerDuration = 0;
 let isTimerActive = false;
 let currentGameId = null;
 let adminSelectedGameData = null;
@@ -24,7 +25,7 @@ let isSuggestionOn = true;
 //for 60 sec
 let nextGameId2 = null;
 let timer2 = null;
-let timerDuration2 = 0;
+export let timerDuration2 = 0;
 let isTimerActive2 = false;
 let currentGameId2 = null;
 let adminSelectedGameData2 = null;
@@ -32,7 +33,7 @@ let isSuggestionOn2 = true;
 //for 180 sec
 let nextGameId3 = null;
 let timer3 = null;
-let timerDuration3 = 0;
+export let timerDuration3 = 0;
 let isTimerActive3 = false;
 let currentGameId3 = null;
 let adminSelectedGameData3 = null;
@@ -40,64 +41,42 @@ let isSuggestionOn3 = true;
 //for 300 sec
 let nextGameId4 = null;
 let timer4 = null;
-let timerDuration4 = 0;
+export let timerDuration4 = 0;
 let isTimerActive4 = false;
 let currentGameId4 = null;
 let adminSelectedGameData4 = null;
 let isSuggestionOn4 = true; 
 
-const updatePurchasedAmount = async (amount) => {
+const updateGameStats = async (purchasedAmount, profitAmount, lossAmount) => {
   try {
-    // Get the current date and set time to 00:00:00.000
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Check if a document exists for the current date
-    let purchasedAmountDoc = await PurchasedAmount.findOne({ date: currentDate });
+    // Find or create today's record
+    let record = await PurchasedAmount.findOne({ date: today });
 
-    if (purchasedAmountDoc) {
-      // Update the total amount for the existing document
-      purchasedAmountDoc.totalAmount += amount;
-      await purchasedAmountDoc.save();
-    } else {
-      // Create a new document for the current date
-      purchasedAmountDoc = new PurchasedAmount({
-        date: currentDate,
-        totalAmount: amount,
+    if (!record) {
+      record = new PurchasedAmount({
+        date: today,
+        totalAmount: 0,
+        profit: 0,
+        loss: 0,
       });
-      await purchasedAmountDoc.save();
     }
+
+    // Update values
+    record.totalAmount += purchasedAmount;
+    record.profit += profitAmount;
+    record.loss += lossAmount;
+
+    await record.save();
   } catch (error) {
-    console.error("Error updating purchased amount:", error);
+    console.error("Error updating game stats:", error);
   }
 };
 
-const updateProfit = async (amount) => {
-  const today = new Date().setHours(0, 0, 0, 0);
-  let record = await PurchasedAmount.findOne({ date: today });
 
-  if (!record) {
-      record = new PurchasedAmount({ date: today });
-  }
-
-  record.profit += amount;
-  await record.save();
-};
-
-const updateLoss = async (amount) => {
-  const today = new Date().setHours(0, 0, 0, 0);
-  let record = await PurchasedAmount.findOne({ date: today });
-
-  if (!record) {
-      record = new PurchasedAmount({ date: today });
-  }
-
-  record.loss += amount;
-  await record.save();
-};
-
-
-function suggestNumber(stats) {
+async function suggestNumber(stats) {
   const payoutRatios = {
     numbers: 9,
     colors: 2,
@@ -105,7 +84,13 @@ function suggestNumber(stats) {
   };
 
   let minLoss = Infinity;
-  let bestNumbers = []; // Store all numbers with the same minimum loss
+  let bestNumbers = [];
+  let possibleWinningNumbers = [];
+
+  // Fetch the admin wallet balance
+  let adminWallet = await AdminWallet.findOne();
+  let adminBalance = adminWallet ? adminWallet.balance : 0;
+  let maxAllowedLoss = adminBalance * (1 - adminWallet.reservePercentage/100);
 
   for (let number = 0; number < 10; number++) {
     let payout = 0;
@@ -125,16 +110,38 @@ function suggestNumber(stats) {
     // Calculate potential loss
     const potentialLoss = payout - stats.totalGameAmount;
 
-    // Check if this loss is the smallest we've seen
-    if (potentialLoss < minLoss) {
-      minLoss = potentialLoss;
-      bestNumbers = [number]; // Reset to this number
-    } else if (potentialLoss === minLoss) {
-      bestNumbers.push(number); // Add to the list of best numbers
+    // If the admin balance is 0, pick numbers where loss is 0
+    if (adminBalance === 0) {
+      if (potentialLoss <= 0) {
+        bestNumbers.push(number);
+      }
+    } else {
+      // Store numbers with min loss
+      if (potentialLoss < minLoss) {
+        minLoss = potentialLoss;
+        bestNumbers = [number];
+      } else if (potentialLoss === minLoss) {
+        bestNumbers.push(number);
+      }
+
+      // If the potential loss is within the allowed range (≤ 60% of balance), consider it
+      if (potentialLoss <= maxAllowedLoss) {
+        possibleWinningNumbers.push(number);
+      }
     }
   }
 
-  // Choose a random number among the bestNumbers
+  // If admin balance is 0, return safest option
+  if (adminBalance === 0 && bestNumbers.length > 0) {
+    return bestNumbers[Math.floor(Math.random() * bestNumbers.length)];
+  }
+
+  // If there are numbers that allow some user wins within the 60% balance limit, pick from them
+  if (possibleWinningNumbers.length > 0) {
+    return possibleWinningNumbers[Math.floor(Math.random() * possibleWinningNumbers.length)];
+  }
+
+  // Default fallback: pick from bestNumbers
   return bestNumbers[Math.floor(Math.random() * bestNumbers.length)];
 }
 
@@ -575,6 +582,7 @@ const startRepeatingTimer = (io, durationMs) => {
   timerDuration = durationMs / 1000;
   isTimerActive = true;
   let gameData;
+
   if (timer) clearInterval(timer);
 
   nextGameId = generateGameId();
@@ -589,7 +597,7 @@ const startRepeatingTimer = (io, durationMs) => {
         gameData = { gameId: currentGameId, ...adminSelectedGameData };
         adminSelectedGameData = null;
       } else if (isSuggestionOn) {
-        const bestNumber = suggestNumber(stats);
+        const bestNumber = await suggestNumber(stats);
         gameData = {
           gameId: currentGameId,
           number: bestNumber,
@@ -608,7 +616,7 @@ const startRepeatingTimer = (io, durationMs) => {
       stats.totalAmount.numbers.fill(0);
       Object.keys(stats.totalAmount.colors).forEach((key) => (stats.totalAmount.colors[key] = 0));
       Object.keys(stats.totalAmount.size).forEach((key) => (stats.totalAmount.size[key] = 0));
-      await updatePurchasedAmount(stats.totalGameAmount);
+  
       stats.totalGameAmount = 0;
       stats.uniqueUsers.clear();
       timerDuration = durationMs / 1000;
@@ -634,8 +642,11 @@ const startRepeatingTimer = (io, durationMs) => {
           const betResults = [];
           for (const bet of userBets) {
             const { userId, content, purchaseAmount } = bet;
-      
-            // Determine win condition
+            let adminWallet = await AdminWallet.findOne();
+            if (!adminWallet) {
+                adminWallet = new AdminWallet({ balance: 0 });
+              }
+
             const isWin =
               content == gameData.number ||
               gameData.color.includes(content.toUpperCase()) ||
@@ -678,7 +689,17 @@ const startRepeatingTimer = (io, durationMs) => {
               duration:"30s"
             });
             await gameResult.save();
-      
+
+            if (isWin) {
+              adminWallet.balance -= winAmount * (1 - taxRate); // Deduct winning amount
+              adminWallet.balance += winAmount * taxRate; // Add tax amount to admin wallet
+            } else {
+              adminWallet.balance += purchaseAmount; // Add loss amount to admin wallet
+            }
+            adminWallet.updatedAt = Date.now();
+            await adminWallet.save();
+            io.emit("adminWalletUpdate",adminWallet.balance)
+
             // Update wallet
             const wallet = await Wallet.findOne({ userId });
             if (wallet) {
@@ -691,14 +712,11 @@ const startRepeatingTimer = (io, durationMs) => {
             socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
-              if (isWin) {
-                user.totalWinAmount += winLossDisplay;
-                await updateLoss(winAmount * (1 - taxRate)); 
-                await updateProfit(winAmount * taxRate); 
-              } else {
-                user.totalLossAmount -= winLossDisplay;
-                await updateProfit(purchaseAmount);
-              }
+              await updateGameStats(
+                purchaseAmount,
+                isWin ? winAmount * taxRate : purchaseAmount, 
+                isWin ? winAmount * (1 - taxRate) : 0
+              );              
               user.updatedAt = Date.now();
               await user.save();
             }
@@ -763,7 +781,7 @@ const startRepeatingTimer2 = (io, durationMs) => {
         gameData2 = { gameId: currentGameId2, ...adminSelectedGameData2 };
         adminSelectedGameData2 = null;
       } else if (isSuggestionOn2) {
-        const bestNumber = suggestNumber(stats2);
+        const bestNumber = await suggestNumber(stats2);
         gameData2 = {
           gameId: currentGameId2,
           number: bestNumber,
@@ -782,7 +800,7 @@ const startRepeatingTimer2 = (io, durationMs) => {
       stats2.totalAmount.numbers.fill(0);
       Object.keys(stats2.totalAmount.colors).forEach((key) => (stats2.totalAmount.colors[key] = 0));
       Object.keys(stats2.totalAmount.size).forEach((key) => (stats2.totalAmount.size[key] = 0));
-      await updatePurchasedAmount(stats2.totalGameAmount);
+     
       stats2.totalGameAmount = 0;
       stats2.uniqueUsers.clear();
       timerDuration2 = durationMs / 1000;
@@ -806,7 +824,10 @@ const startRepeatingTimer2 = (io, durationMs) => {
           const betResults2 = [];
           for (const bet2 of userBets2) {
             const { userId, content, purchaseAmount } = bet2;
-      
+            let adminWallet = await AdminWallet.findOne();
+            if (!adminWallet) {
+                adminWallet = new AdminWallet({ balance: 0 });
+              }
             // Determine win condition
             const isWin =
               content == gameData2.number ||
@@ -850,7 +871,15 @@ const startRepeatingTimer2 = (io, durationMs) => {
               duration:"60s"
             });
             await gameResult.save();
-      
+            if (isWin) {
+              adminWallet.balance -= winAmount * (1 - taxRate); // Deduct winning amount
+              adminWallet.balance += winAmount * taxRate; // Add tax amount to admin wallet
+            } else {
+              adminWallet.balance += purchaseAmount; // Add loss amount to admin wallet
+            }
+            adminWallet.updatedAt = Date.now();
+            await adminWallet.save();
+            io.emit("adminWalletUpdate",adminWallet.balance)
             // Update wallet
             const wallet = await Wallet.findOne({ userId });
             if (wallet) {
@@ -864,14 +893,11 @@ const startRepeatingTimer2 = (io, durationMs) => {
             socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
-              if (isWin) {
-                user.totalWinAmount += winLossDisplay;
-                await updateLoss(winAmount * (1 - taxRate)); 
-                await updateProfit(winAmount * taxRate); 
-              } else {
-                user.totalLossAmount -= winLossDisplay;
-                await updateProfit(purchaseAmount);
-              }
+              await updateGameStats(
+                purchaseAmount,
+                isWin ? winAmount * taxRate : purchaseAmount, 
+                isWin ? winAmount * (1 - taxRate) : 0
+              );              
               user.updatedAt = Date.now();
               await user.save();
             }
@@ -935,7 +961,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
         gameData3 = { gameId: currentGameId3, ...adminSelectedGameData3 };
         adminSelectedGameData3 = null;
       } else if (isSuggestionOn3) {
-        const bestNumber = suggestNumber(stats3);
+        const bestNumber = await suggestNumber(stats3);
         gameData3 = {
           gameId: currentGameId3,
           number: bestNumber,
@@ -954,7 +980,6 @@ const startRepeatingTimer3 = (io, durationMs) => {
       stats3.totalAmount.numbers.fill(0);
       Object.keys(stats3.totalAmount.colors).forEach((key) => (stats3.totalAmount.colors[key] = 0));
       Object.keys(stats3.totalAmount.size).forEach((key) => (stats3.totalAmount.size[key] = 0));
-      await updatePurchasedAmount(stats3.totalGameAmount);
       stats3.totalGameAmount = 0;
       stats3.uniqueUsers.clear();
       timerDuration3 = durationMs / 1000;
@@ -978,7 +1003,10 @@ const startRepeatingTimer3 = (io, durationMs) => {
           const betResults3 = [];
           for (const bet3 of userBets3) {
             const { userId, content, purchaseAmount } = bet3;
-      
+            let adminWallet = await AdminWallet.findOne();
+            if (!adminWallet) {
+                adminWallet = new AdminWallet({ balance: 0 });
+              }
             // Determine win condition
             const isWin =
               content == gameData3.number ||
@@ -1022,7 +1050,15 @@ const startRepeatingTimer3 = (io, durationMs) => {
               duration:"180s"
             });
             await gameResult.save();
-      
+            if (isWin) {
+              adminWallet.balance -= winAmount * (1 - taxRate); // Deduct winning amount
+              adminWallet.balance += winAmount * taxRate; // Add tax amount to admin wallet
+            } else {
+              adminWallet.balance += purchaseAmount; // Add loss amount to admin wallet
+            }
+            adminWallet.updatedAt = Date.now();
+            await adminWallet.save();
+            io.emit("adminWalletUpdate",adminWallet.balance)
             // Update wallet
             const wallet = await Wallet.findOne({ userId });
             if (wallet) {
@@ -1035,14 +1071,11 @@ const startRepeatingTimer3 = (io, durationMs) => {
             socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
-              if (isWin) {
-                user.totalWinAmount += winLossDisplay;
-                await updateLoss(winAmount * (1 - taxRate)); 
-                await updateProfit(winAmount * taxRate); 
-              } else {
-                user.totalLossAmount -= winLossDisplay;
-                await updateProfit(purchaseAmount);
-              }
+              await updateGameStats(
+                purchaseAmount,
+                isWin ? winAmount * taxRate : purchaseAmount, 
+                isWin ? winAmount * (1 - taxRate) : 0
+              );              
               user.updatedAt = Date.now();
               await user.save();
             }
@@ -1106,7 +1139,7 @@ const startRepeatingTimer4 = (io, durationMs) => {
         gameData4 = { gameId: currentGameId4, ...adminSelectedGameData4 };
         adminSelectedGameData4 = null;
       }else if (isSuggestionOn4) {
-        const bestNumber = suggestNumber(stats4);
+        const bestNumber = await suggestNumber(stats4);
         gameData4 = {
           gameId: currentGameId4,
           number: bestNumber,
@@ -1125,7 +1158,7 @@ const startRepeatingTimer4 = (io, durationMs) => {
       stats4.totalAmount.numbers.fill(0);
       Object.keys(stats4.totalAmount.colors).forEach((key) => (stats4.totalAmount.colors[key] = 0));
       Object.keys(stats4.totalAmount.size).forEach((key) => (stats4.totalAmount.size[key] = 0));
-      await updatePurchasedAmount(stats4.totalGameAmount);
+      
       stats4.totalGameAmount = 0;
       stats4.uniqueUsers.clear();
       timerDuration4 = durationMs / 1000;
@@ -1149,7 +1182,10 @@ const startRepeatingTimer4 = (io, durationMs) => {
           const betResults4 = [];
           for (const bet4 of userBets4) {
             const { userId, content, purchaseAmount } = bet4;
-      
+            let adminWallet = await AdminWallet.findOne();
+            if (!adminWallet) {
+                adminWallet = new AdminWallet({ balance: 0 });
+              }
             // Determine win condition
             const isWin =
               content == gameData4.number ||
@@ -1193,7 +1229,15 @@ const startRepeatingTimer4 = (io, durationMs) => {
               duration:"300s"
             });
             await gameResult.save();
-      
+            if (isWin) {
+              adminWallet.balance -= winAmount * (1 - taxRate); // Deduct winning amount
+              adminWallet.balance += winAmount * taxRate; // Add tax amount to admin wallet
+            } else {
+              adminWallet.balance += purchaseAmount; // Add loss amount to admin wallet
+            }
+            adminWallet.updatedAt = Date.now();
+            await adminWallet.save();
+            io.emit("adminWalletUpdate",adminWallet.balance)
             // Update wallet
             const wallet = await Wallet.findOne({ userId });
             if (wallet) {
@@ -1206,14 +1250,11 @@ const startRepeatingTimer4 = (io, durationMs) => {
             socket.emit("walletUpdate", { walletDetails: { totalAmount: wallet.totalAmount, walletNo:wallet.walletNo } });
             const user = await User.findById(userId);
             if (user) {
-              if (isWin) {
-                user.totalWinAmount += winLossDisplay;
-                await updateLoss(winAmount * (1 - taxRate)); 
-                await updateProfit(winAmount * taxRate); 
-              } else {
-                user.totalLossAmount -= winLossDisplay;
-                await updateProfit(purchaseAmount);
-              }
+              await updateGameStats(
+                purchaseAmount,
+                isWin ? winAmount * taxRate : purchaseAmount, 
+                isWin ? winAmount * (1 - taxRate) : 0
+              );              
               user.updatedAt = Date.now();
               await user.save();
             }

@@ -11,8 +11,8 @@ import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 import GameResult from "../models/GameResult.js";
 import PurchasedAmount from "../models/PurchaseAmount.js";
-import {io,userSockets} from "../socket.js";
-
+import {io,userSockets,timerDuration,timerDuration2,timerDuration3,timerDuration4} from "../socket.js";
+import AdminWallet from "../models/AdminWallet.js";
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.resolve("images");
@@ -572,3 +572,61 @@ export const getPurchasedAmount = async (req, res) => {
 
 
 
+export const getAdminWallet =  async (req, res) => {
+  try {
+    let adminWallet = await AdminWallet.findOne();
+    
+    if (!adminWallet) {
+      adminWallet = await AdminWallet.create({});
+    }
+
+    res.status(200).json({ balance: adminWallet.balance });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+
+export const getAdminWalletpercent =  async (req, res) => {
+  try {
+    let adminWallet = await AdminWallet.findOne();
+    
+    if (!adminWallet) {
+      adminWallet = await AdminWallet.create({});
+    }
+
+    res.status(200).json({ percent: adminWallet.reservePercentage });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const updateWalletPercent =  async (req, res) => {
+  try {
+    const { reservePercentage } = req.body;
+
+    if (reservePercentage < 0 || reservePercentage > 100) {
+      return res.status(400).json({ message: "Reserve percentage must be between 0 and 100" });
+    }
+
+    if (timerDuration <= 6 || timerDuration2 <= 6 || timerDuration3 <= 6 || timerDuration4 <= 6) {
+      return res.status(400).json({ message: "Cannot update reserve percentage when any timer is below 5 seconds" });
+    }
+
+    const adminWallet = await AdminWallet.findOne();
+    if (!adminWallet) {
+      return res.status(404).json({ message: "Admin wallet not found" });
+    }
+
+    adminWallet.reservePercentage = reservePercentage;
+    adminWallet.updatedAt = new Date();
+
+    await adminWallet.save();
+
+    res.status(200).json({ reservePercentage: adminWallet.reservePercentage });
+  } catch (error) {
+    console.error("Error updating reserve percentage:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

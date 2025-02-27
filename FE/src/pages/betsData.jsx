@@ -4,7 +4,7 @@ import moment from 'moment';
 import AdminNavbar from '../components/AdminNavbar';
 import { toast } from 'react-toastify';
 import Loader from "../components/Loader";
-
+import { FaEdit } from "react-icons/fa";
 const BetsData = () => {
   const today = moment().format('YYYY-MM-DD');
   const [betsData, setBetsData] = useState([]);
@@ -20,6 +20,52 @@ const BetsData = () => {
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef();
   const initialLoad = useRef(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newReserve, setNewReserve] = useState(0);
+  const [Reserve, setReserve] = useState(0);
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/admin/update-wallet-percent`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reservePercentage: newReserve }),
+      });
+  
+      const data = await response.json(); // Parse response JSON
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update reserve percentage"); 
+      }
+  
+      setReserve(data.reservePercentage);
+      setNewReserve(data.reservePercentage);
+      setIsModalOpen(false); // Close modal
+      toast.success(data.message || "Reserve percentage updated successfully!");
+    } catch (error) {
+      console.error("Error updating reserve percentage:", error);
+      toast.error(error.message || "Something went wrong!");
+    }
+  };
+  
+  
+
+  useEffect(() => {
+    const fetchpercent = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/admin/get-wallet-percent`);
+        const data = await response.json();
+        setReserve(data.percent);
+        setNewReserve(data.percent);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+    fetchpercent();
+  }, []);
+
+  
 
   const fetchTotalPurchasedAmount = async (fromDate, toDate) => {
     try {
@@ -36,7 +82,25 @@ const BetsData = () => {
       setTotalAmount(0); 
     }
   };
+  const fetchBetsDataforInitial = async (fromDate, toDate) => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin/betsData`, {
+        params: { fromDate, toDate, page, limit: 30 },
+      });
+      const newData = response.data.items || [];
 
+      setBetsData((prev) => [...prev, ...newData]);
+      setHasMore(newData.length === 30);
+    } catch (err) {
+      console.error("Error fetching bets data:", err);
+      setError("");
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  };
   const fetchBetsData = async (fromDate, toDate) => {
     try {
       setLoading(true);
@@ -62,7 +126,7 @@ const BetsData = () => {
 
     if (initialLoad.current) {  
       initialLoad.current = false; 
-      fetchBetsData(today, today);
+      fetchBetsDataforInitial(today, today);
       fetchTotalPurchasedAmount(today, today);
     }
 
@@ -91,7 +155,7 @@ const BetsData = () => {
       return;
     }
     setBetsData([]);
-    setPage(1);
+    setPage((prev) => 1);
     setHasMore(true);
     fetchBetsData(fromDate, toDate);
     fetchTotalPurchasedAmount(fromDate, toDate);
@@ -116,8 +180,8 @@ const BetsData = () => {
       )}
 
       {/* Search Section */}
-      <div className={`flex justify-between ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto w-1/3">
+      <div className={`flex flex-col space-y-4 md:flex-row md:space-y-0 justify-between ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto w-full md:w-1/3">
           <h1 className="text-xl font-bold text-center mb-6">Search Bets Data</h1>
           <div className="space-y-4">
             <div>
@@ -166,6 +230,31 @@ const BetsData = () => {
             <h2 className="text-xl font-bold">Total Loss Amount</h2>
             <p className="text-2xl mt-2 text-left text-red">₹{totalLoss}</p>
           </div>
+
+        </div> 
+        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto flex items-center gap-4">
+        <h4 className="text-xl font-bold">Reserve %</h4>
+      <p className="text-2xl text-left text-green-500">{Reserve}%</p>
+      <button onClick={() => setIsModalOpen(true)} className="text-white">
+        <FaEdit className="text-lg cursor-pointer" />
+      </button>
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Edit Reserve Percentage</h2>
+            <input
+              type="number"
+              value={newReserve}
+              onChange={(e) => setNewReserve(e.target.value)}
+              className="border p-2 w-full rounded border-gray-500 text-gray-900"
+            />
+            <div className="flex justify-end mt-4">
+              <button onClick={() => setIsModalOpen(false)} className="mr-2 px-4 py-2 bg-gray-400 rounded">Cancel</button>
+              <button onClick={handleSave}  className="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
 
       </div>

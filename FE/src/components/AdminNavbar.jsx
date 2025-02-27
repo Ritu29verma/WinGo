@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
 import { FaBars } from "react-icons/fa"; 
 import AdminSidebar from "./AdminSidebar";
 import { useNavigate } from 'react-router-dom';
-
+import socket from "../socket";
 const AdminNavbar = ({ children, logout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [balance, setBalance] = useState(0);
   const navigate = useNavigate();
 
   const toggleSidebar = () => {
@@ -14,6 +15,29 @@ const AdminNavbar = ({ children, logout }) => {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/admin/get-wallet`);
+        const data = await response.json();
+        setBalance(data.balance);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+    fetchBalance();
+
+
+    // Listen for real-time updates
+    socket.on("adminWalletUpdate", (newBalance) => {
+      setBalance(newBalance); // Update the balance in real-time
+    });
+
+    return () => {
+      socket.off("adminWalletUpdate"); // Clean up listener on unmount
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -51,9 +75,10 @@ const AdminNavbar = ({ children, logout }) => {
           >
             <FaBars />
           </button>
-          <h1 className="text-lg font-bold">Dashboard V5</h1>
+          <h1 className="text-lg font-bold">Dashboard</h1>
         
           <div className="flex items-center space-x-4">
+          <span className="text-yellow-400 font-bold">Balance: ₹{balance}</span>
           <button onClick={handleLogout} className="bg-orange-500 text-white hover:bg-white hover:text-orange-500 transform transition-transform hover:scale-95 font-bold px-4 py-1 rounded">
             Logout
           </button>
