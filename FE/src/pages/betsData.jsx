@@ -23,6 +23,27 @@ const BetsData = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newReserve, setNewReserve] = useState(0);
   const [Reserve, setReserve] = useState(0);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+
+  const handleAdminWithdraw = async () => {
+    if (!withdrawAmount || withdrawAmount <= 0) {
+      toast.error("Please enter a valid amount.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/admin/withdraw-wallet`,
+        { amount: withdrawAmount }
+      );
+      toast.success(response.data.message);
+      setIsWithdrawModalOpen(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Withdrawal failed.");
+    }
+  };
+  
   const handleSave = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_BASE_URL}/admin/update-wallet-percent`, {
@@ -232,11 +253,12 @@ const BetsData = () => {
           </div>
 
         </div> 
-        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto flex items-center gap-4">
+        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-row space-x-2 items-center justify-center">
         <h4 className="text-xl font-bold">Reserve %</h4>
       <p className="text-2xl text-left text-green-500">{Reserve}%</p>
       <button onClick={() => setIsModalOpen(true)} className="text-white">
-        <FaEdit className="text-lg cursor-pointer" />
+        <FaEdit className="text-lg cursor-pointer hover:text-blue-500" />
       </button>
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -255,6 +277,45 @@ const BetsData = () => {
           </div>
         </div>
       )}
+      </div>
+      <div className="flex flex-row space-x-2 ">
+      <button
+            onClick={() => setIsWithdrawModalOpen(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Withdraw Amount
+          </button>
+
+          {isWithdrawModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">
+                Enter Withdrawal Amount
+              </h2>
+              <input
+                type="number"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                className="border p-2 w-full rounded border-gray-500 text-gray-900"
+              />
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setIsWithdrawModalOpen(false)}
+                  className="mr-2 px-4 py-2 bg-gray-400 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAdminWithdraw}
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                  Withdraw
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+       </div>
         </div>
 
       </div>

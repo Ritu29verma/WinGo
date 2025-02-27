@@ -1,11 +1,12 @@
 import express from "express";
-import { registerAdmin, loginAdmin,checkAdmin,updateMinAmount, createChannel,updateChannel,deleteChannel,getChannelsByType,getMinAmount,getRechargeByStatus,ApproveRecharge,rejectRecharge,getNonPendingTransactions,getAllUsers,AdminGameResults,getPurchasedAmount,getAdminWallet,getAdminWalletpercent,updateWalletPercent} from "../controllers/adminController.js";
+import { registerAdmin, loginAdmin,checkAdmin,updateMinAmount, createChannel,updateChannel,deleteChannel,getChannelsByType,getMinAmount,getRechargeByStatus,ApproveRecharge,rejectRecharge,getNonPendingTransactions,getAllUsers,AdminGameResults,getPurchasedAmount,getAdminWallet,getAdminWalletpercent,updateWalletPercent,withdrawFromAdminWallet} from "../controllers/adminController.js";
 import { getPendingWithdrawals,getNonPendingWithdrawals,approveWithdrawal,rejectWithdrawal } from "../controllers/TransactionController.js";
 const router = express.Router();
 
 router.post("/register", registerAdmin);
 router.post("/login", loginAdmin);
 router.post("/minamount",updateMinAmount);
+router.post("/withdraw-wallet",withdrawFromAdminWallet);
 router.get("/check",checkAdmin);
 router.get("/get-wallet",getAdminWallet);
 router.get("/get-wallet-percent",getAdminWalletpercent);
