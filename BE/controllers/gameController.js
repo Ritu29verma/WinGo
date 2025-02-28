@@ -6,8 +6,6 @@ import GameResult from "../models/GameResult.js";
 
 import User from "../models/User.js";
 
-
-
 // API to fetch game logs
 export const getGameLogs = async (req, res) => {
   try {

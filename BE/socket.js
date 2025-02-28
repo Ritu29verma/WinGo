@@ -89,7 +89,7 @@ async function suggestNumber(stats) {
 
   // Fetch the admin wallet balance
   let adminWallet = await AdminWallet.findOne();
-  let adminBalance = adminWallet ? adminWallet.balance : 0;
+  let adminBalance = adminWallet.balance;
   let maxAllowedLoss = adminBalance * (1 - adminWallet.reservePercentage/100);
 
   for (let number = 0; number < 10; number++) {
@@ -108,7 +108,7 @@ async function suggestNumber(stats) {
     if ([5, 6, 7, 8, 9].includes(number)) payout += stats.totalAmount.size.Big * payoutRatios.size;
 
     // Calculate potential loss
-    const potentialLoss = payout - stats.totalGameAmount;
+    const potentialLoss = payout;
 
     // If the admin balance is 0, pick numbers where loss is 0
     if (adminBalance === 0) {
@@ -125,7 +125,7 @@ async function suggestNumber(stats) {
       }
 
       // If the potential loss is within the allowed range (≤ 60% of balance), consider it
-      if (potentialLoss <= maxAllowedLoss) {
+      if (potentialLoss <= maxAllowedLoss && potentialLoss>0) {
         possibleWinningNumbers.push(number);
       }
     }

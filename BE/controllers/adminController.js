@@ -632,7 +632,6 @@ export const updateWalletPercent =  async (req, res) => {
 };
 
 
-
 export const withdrawFromAdminWallet = async (req, res) => {
   const {amount} = req.body;
   try {
