@@ -43,7 +43,7 @@ const BetsData = () => {
       toast.error(error.response?.data?.message || "Withdrawal failed.");
     }
   };
-  
+
   const handleSave = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_BASE_URL}/admin/update-wallet-percent`, {
@@ -153,6 +153,29 @@ const BetsData = () => {
 
   }, []);
 
+  const fetchBetsDatapage1 = async (fromDate, toDate) => {
+    try {
+      setLoading(true);
+      setError("");
+      setPage(1)
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin/betsData`, {
+        params: { fromDate, toDate, page: 1, limit: 30 },
+      });
+      const newData = response.data.items || [];
+
+      setBetsData((prev) => [...prev, ...newData]);
+      setHasMore(newData.length === 30);
+      setPage((prev) => prev + 1);
+      console.log("page is set to ",page)
+    } catch (err) {
+      console.error("Error fetching bets data:", err);
+      setError("");
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const lastElementRef = useCallback(
     (node) => {
       if (loading) return;
@@ -178,7 +201,7 @@ const BetsData = () => {
     setBetsData([]);
     setPage((prev) => 1);
     setHasMore(true);
-    fetchBetsData(fromDate, toDate);
+    fetchBetsDatapage1(fromDate, toDate);
     fetchTotalPurchasedAmount(fromDate, toDate);
   };
 
@@ -243,13 +266,13 @@ const BetsData = () => {
           {/* Row 2: Total Profit Amount */}
           <div className="flex flex-col">
             <h2 className="text-xl font-bold">Total Profit Amount</h2>
-            <p className="text-2xl mt-2 text-left text-green-500">₹{totalProfit}</p>
+            <p className="text-2xl mt-2 text-left text-green-500">₹{totalProfit.toFixed(2)}</p>
           </div>
 
           {/* Row 3: Total Loss Amount */}
           <div className="flex flex-col">
             <h2 className="text-xl font-bold">Total Loss Amount</h2>
-            <p className="text-2xl mt-2 text-left text-red">₹{totalLoss}</p>
+            <p className="text-2xl mt-2 text-left text-red">₹{totalLoss.toFixed(2)}</p>
           </div>
 
         </div> 
