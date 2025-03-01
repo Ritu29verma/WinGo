@@ -5,6 +5,8 @@ import AdminNavbar from '../components/AdminNavbar';
 import { toast } from 'react-toastify';
 import Loader from "../components/Loader";
 import { FaEdit } from "react-icons/fa";
+import WithdrawHistoryModal from '../components/AdminWIthdrawHistory';
+
 const BetsData = () => {
   const today = moment().format('YYYY-MM-DD');
   const [betsData, setBetsData] = useState([]);
@@ -25,6 +27,7 @@ const BetsData = () => {
   const [Reserve, setReserve] = useState(0);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   const handleAdminWithdraw = async () => {
     if (!withdrawAmount || withdrawAmount <= 0) {
@@ -33,11 +36,14 @@ const BetsData = () => {
     }
 
     try {
+      const adminId = localStorage.getItem("admin_id")
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/admin/withdraw-wallet`,
-        { amount: withdrawAmount }
+        { amount: withdrawAmount, adminId }
       );
-      toast.success(response.data.message);
+
+      
+      toast.success(response.data.message || "Withdrawal Successful! ");
       setIsWithdrawModalOpen(false);
     } catch (error) {
       toast.error(error.response?.data?.message || "Withdrawal failed.");
@@ -216,7 +222,7 @@ const BetsData = () => {
 
   return (
     <AdminNavbar>
-    <div className="bg-gray-700 text-white min-h-screen p-6 space-y-10 relative">
+    <div className="bg-gray-700 text-white min-h-screen p-6 space-y-6">
       {loading && (
         <div className="inset-0 flex items-center justify-center bg-gray-700">
           <Loader />
@@ -338,7 +344,17 @@ const BetsData = () => {
             </div>
           </div>
         )}
+        
+
        </div>
+       <button
+            onClick={() => setIsHistoryModalOpen(true)}
+            className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+           View Withdraw History
+
+          </button>
+          <WithdrawHistoryModal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} />
         </div>
 
       </div>

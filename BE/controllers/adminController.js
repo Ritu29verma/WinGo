@@ -13,6 +13,8 @@ import GameResult from "../models/GameResult.js";
 import PurchasedAmount from "../models/PurchaseAmount.js";
 import {io,userSockets,timerDuration,timerDuration2,timerDuration3,timerDuration4} from "../socket.js";
 import AdminWallet from "../models/AdminWallet.js";
+import AdminWithdraw from "../models/AdminWIthdraw.js";
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.resolve("images");
@@ -633,11 +635,12 @@ export const updateWalletPercent =  async (req, res) => {
 
 
 export const withdrawFromAdminWallet = async (req, res) => {
-  const {amount} = req.body;
+  const { amount, adminId } = req.body;
+
   try {
     // Check if any timer is below 5 seconds
     if (timerDuration <= 6 || timerDuration2 <= 6 || timerDuration3 <= 6 || timerDuration4 <= 6) {
-      return res.status(400).json({ message: "Cannot withdraw when any timer is below 5 seconds" });
+      return res.status(400).json({ message: "Cannot withdraw when any timer is below 5 seconds. Try Later!" });
     }
 
     // Fetch the admin wallet
@@ -646,29 +649,54 @@ export const withdrawFromAdminWallet = async (req, res) => {
       return res.status(404).json({ message: "Admin wallet not found" });
     }
 
-    // Check if balance is available for withdrawal
-    if (adminWallet.balance <= 0) {
-      return res.status(400).json({ message: "Insufficient balance for withdrawal" });
-    }
+    // Validate withdrawal amount
     if (amount <= 0) {
       return res.status(400).json({ message: "Invalid withdrawal amount" });
     }
 
-    // Check if balance is available for withdrawal
+    // Check if sufficient balance is available
     if (adminWallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient balance for withdrawal" });
     }
-    // Perform withdrawal (for now, setting balance to zero as an example)
+
+    // Perform withdrawal
     adminWallet.balance -= amount;
     adminWallet.updatedAt = new Date();
-
     await adminWallet.save();
 
-    io.emit("adminWalletUpdate",adminWallet.balance)
+    // Save withdrawal transaction
+    const newWithdrawal = new AdminWithdraw({
+      adminId,
+      amount,
+    });
+
+    await newWithdrawal.save();
+
+    // Emit balance update
+    io.emit("adminWalletUpdate", adminWallet.balance);
 
     res.status(200).json({ message: "Withdrawal successful." });
   } catch (error) {
     console.error("Error processing withdrawal:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+export const getAdminWithdrawHistory = async (req, res) => {
+  try {
+    const withdrawals = await AdminWithdraw.find()
+      .sort({ createdAt: -1 })
+      .populate("adminId", "phoneNo"); // Fetch only phoneNo from Admin
+
+    if (withdrawals.length === 0) {
+      return res.status(200).json({ message: "No withdrawal records exist." });
+    }
+
+    res.status(200).json(withdrawals);
+  } catch (error) {
+    console.error("Error fetching withdrawal history:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
