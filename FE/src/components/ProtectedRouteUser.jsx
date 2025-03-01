@@ -75,7 +75,7 @@ const PrivateRouteUser = ({ children }) => {
   }
 
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/admin/login" />;
 };
 
 export default PrivateRouteUser;
