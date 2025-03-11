@@ -589,7 +589,7 @@ const startRepeatingTimer = (io, durationMs) => {
   io.emit("gameId", { gameId: nextGameId });
 
   timer = setInterval(async () => {
-
+    io.emit("AlltimerUpdate", ({ timerDuration, timerDuration2, timerDuration3, timerDuration4 }));
     if (timerDuration === 5) {
       // Set game data when 5 seconds are left
       currentGameId = nextGameId;
@@ -774,6 +774,7 @@ const startRepeatingTimer2 = (io, durationMs) => {
   io.emit("gameId2", { gameId: nextGameId2 });
 
   timer2 = setInterval(async () => {
+    io.emit("AlltimerUpdate", ({ timerDuration, timerDuration2, timerDuration3, timerDuration4 }));
     if (timerDuration2 === 5) {
       // Set game data when 5 seconds are left
       currentGameId2 = nextGameId2;
@@ -954,6 +955,7 @@ const startRepeatingTimer3 = (io, durationMs) => {
   io.emit("gameId3", { gameId: nextGameId3 });
 
   timer3 = setInterval(async () => {
+    io.emit("AlltimerUpdate", ({ timerDuration, timerDuration2, timerDuration3, timerDuration4 }));
     if (timerDuration3 === 5) {
       // Set game data when 5 seconds are left
       currentGameId3 = nextGameId3;
@@ -1132,6 +1134,7 @@ const startRepeatingTimer4 = (io, durationMs) => {
   io.emit("gameId4", { gameId: nextGameId4 });
 
   timer4 = setInterval(async () => {
+    io.emit("AlltimerUpdate", ({ timerDuration, timerDuration2, timerDuration3, timerDuration4 }));
     if (timerDuration4 === 5) {
       // Set game data when 5 seconds are left
       currentGameId4 = nextGameId4;
@@ -1315,6 +1318,8 @@ export const initializeSocket = (server) => {
       userSockets.set(userId, socket.id);
       console.log(`User ${userId} connected with socket ID ${socket.id}`);
     });
+
+    socket.emit("AlltimerUpdate", ({ timerDuration, timerDuration2, timerDuration3, timerDuration4 }));
     //for 30 sec
     socket.on("startTimer", (durationMs, callback) => {
       startRepeatingTimer(io, durationMs);

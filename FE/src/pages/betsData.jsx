@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import Loader from "../components/Loader";
 import { FaEdit } from "react-icons/fa";
 import WithdrawHistoryModal from '../components/AdminWIthdrawHistory';
-
+import socket from "../socket";
 const BetsData = () => {
   const today = moment().format('YYYY-MM-DD');
   const [betsData, setBetsData] = useState([]);
@@ -28,8 +28,24 @@ const BetsData = () => {
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [canWithdraw, setCanWithdraw] = useState(false); 
+
+
+  useEffect(() => {
+    socket.on("AlltimerUpdate", ({ timerDuration, timerDuration2, timerDuration3, timerDuration4 }) => {
+      // Check if any timer is <= 5 seconds
+      const withdrawAllowed = timerDuration > 6 && timerDuration2 > 6 && timerDuration3 > 6 && timerDuration4 > 6;
+      setCanWithdraw(withdrawAllowed);
+    });
+
+    return () => {
+      socket.off("timerUpdate");
+    };
+  }, []);
+
 
   const handleAdminWithdraw = async () => {
+    if (!canWithdraw) return;
     if (!withdrawAmount || withdrawAmount <= 0) {
       toast.error("Please enter a valid amount.");
       return;
@@ -282,13 +298,17 @@ const BetsData = () => {
           </div>
 
         </div> 
-        <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto flex flex-col items-center justify-center gap-4">
-          <div className="flex flex-row space-x-2 items-center justify-center">
-        <h4 className="text-xl font-bold">Reserve %</h4>
-      <p className="text-2xl text-left text-green-500">{Reserve}%</p>
-      <button onClick={() => setIsModalOpen(true)} className="text-white">
-        <FaEdit className="text-lg cursor-pointer hover:text-blue-500" />
-      </button>
+        <div className="bg-gray-800 rounded-lg py-6 px-4 max-w-md mx-auto flex flex-col items-center  justify-center gap-6">
+      {/* Reserve Percentage Section */}
+      <div className="flex flex-row items-center justify-center space-x-3">
+        <h4 className="text-xl font-bold text-white">Reserve %</h4>
+        <p className="text-2xl text-green-500">{Reserve}%</p>
+        <button onClick={() => setIsModalOpen(true)} className="text-white">
+          <FaEdit className="text-lg cursor-pointer hover:text-blue-500" />
+        </button>
+      </div>
+      
+      {/* Reserve Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-80">
@@ -301,61 +321,61 @@ const BetsData = () => {
             />
             <div className="flex justify-end mt-4">
               <button onClick={() => setIsModalOpen(false)} className="mr-2 px-4 py-2 bg-gray-400 rounded">Cancel</button>
-              <button onClick={handleSave}  className="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+              <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
             </div>
           </div>
         </div>
       )}
+      
+      {/* Withdraw Section */}
+      <div className="flex flex-col items-center w-full">
+        <button
+          onClick={() => setIsWithdrawModalOpen(true)}
+          className="px-4 py-2 w-full rounded text-white bg-blue-500 hover:bg-blue-600"
+        >
+          Withdraw Amount
+        </button>
       </div>
-      <div className="flex flex-row space-x-2 ">
-      <button
-            onClick={() => setIsWithdrawModalOpen(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Withdraw Amount
-          </button>
-
-          {isWithdrawModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">
-                Enter Withdrawal Amount
-              </h2>
-              <input
-                type="number"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-                className="border p-2 w-full rounded border-gray-500 text-gray-900"
-              />
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => setIsWithdrawModalOpen(false)}
-                  className="mr-2 px-4 py-2 bg-gray-400 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAdminWithdraw}
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Withdraw
-                </button>
-              </div>
+      
+      {/* Withdraw Modal */}
+      {isWithdrawModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Enter Withdrawal Amount</h2>
+            <input
+              type="number"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              className="border p-2 w-full rounded border-gray-500 text-gray-900"
+            />
+            <p className={`text-sm mt-2 ${canWithdraw ? 'text-green-500' : 'text-red'}`}>
+              {canWithdraw ? "You can withdraw amount right now!" : "You cannot withdraw amount right now. Wait a little!"}
+            </p>
+            <div className="flex justify-end mt-4">
+              <button onClick={() => setIsWithdrawModalOpen(false)} className="mr-2 px-4 py-2 bg-gray-400 rounded">Cancel</button>
+              <button
+                onClick={handleAdminWithdraw}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-500"
+                disabled={!canWithdraw}
+              >
+                Withdraw
+              </button>
             </div>
           </div>
-        )}
-        
-
-       </div>
-       <button
-            onClick={() => setIsHistoryModalOpen(true)}
-            className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-           View Withdraw History
-
-          </button>
-          <WithdrawHistoryModal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} />
         </div>
+      )}
+      
+      {/* Withdraw History Button */}
+      <button
+        onClick={() => setIsHistoryModalOpen(true)}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+      >
+        View Withdraw History
+      </button>
+      
+      {/* Withdraw History Modal */}
+      <WithdrawHistoryModal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} />
+    </div>
 
       </div>
 

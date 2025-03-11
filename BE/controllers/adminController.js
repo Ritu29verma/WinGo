@@ -685,10 +685,13 @@ export const withdrawFromAdminWallet = async (req, res) => {
 
 
 export const getAdminWithdrawHistory = async (req, res) => {
+  const {page , limit} = req.query
   try {
     const withdrawals = await AdminWithdraw.find()
       .sort({ createdAt: -1 })
-      .populate("adminId", "phoneNo"); // Fetch only phoneNo from Admin
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .populate("adminId", "phoneNo");
 
     if (withdrawals.length === 0) {
       return res.status(200).json({ message: "No withdrawal records exist." });
